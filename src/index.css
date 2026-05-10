@@ -229,3 +229,368 @@ input {
   color: #2563eb;
   font-weight: 700;
 }
+
+.patient-dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.patient-hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+  background: linear-gradient(135deg, #dbeafe, #f8fafc);
+  border: 1px solid #bfdbfe;
+  padding: 24px;
+  border-radius: 18px;
+}
+
+.patient-hero h2 {
+  margin: 0 0 8px;
+  color: #0f172a;
+  font-size: 28px;
+}
+
+.patient-hero p {
+  margin: 0;
+  color: #475569;
+}
+
+.sos-button {
+  border: none;
+  background: #dc2626;
+  color: white;
+  font-weight: 800;
+  font-size: 16px;
+  padding: 16px 22px;
+  border-radius: 999px;
+  cursor: pointer;
+  box-shadow: 0 10px 24px rgba(220, 38, 38, 0.25);
+  white-space: nowrap;
+}
+
+.sos-button:hover {
+  background: #b91c1c;
+}
+
+.sos-button.sos-sent {
+  background: #15803d;
+  box-shadow: 0 10px 24px rgba(21, 128, 61, 0.25);
+}
+
+.sos-alert {
+  background: #fee2e2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+  padding: 14px 18px;
+  border-radius: 14px;
+  font-weight: 700;
+}
+
+.patient-main-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 18px;
+}
+
+.patient-checklist {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.patient-checklist li {
+  margin-bottom: 12px;
+}
+
+.patient-checklist label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  padding: 12px;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.patient-checklist input {
+  width: 18px;
+  height: 18px;
+}
+
+.patient-checklist span {
+  font-weight: 600;
+}
+
+@media (max-width: 1000px) {
+  .patient-main-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .patient-hero {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .sos-button {
+    width: 100%;
+  }
+}
+
+.home-page {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, #dbeafe, transparent 32%),
+    linear-gradient(135deg, #f8fafc, #eef6ff);
+  color: #0f172a;
+}
+
+.home-navbar {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.brand-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #2563eb, #14b8a6);
+  color: white;
+  display: grid;
+  place-items: center;
+  position: relative;
+  box-shadow: 0 12px 26px rgba(37, 99, 235, 0.25);
+}
+
+.brand-heart {
+  font-size: 25px;
+  transform: translateY(1px);
+}
+
+.brand-plus {
+  position: absolute;
+  right: 8px;
+  top: 5px;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.brand-logo h1 {
+  margin: 0;
+  font-size: 24px;
+  line-height: 1;
+}
+
+.brand-logo p {
+  margin: 4px 0 0;
+  color: #64748b;
+  font-weight: 700;
+}
+
+.nav-login-button {
+  text-decoration: none;
+  background: #0f172a;
+  color: white;
+  padding: 11px 18px;
+  border-radius: 999px;
+  font-weight: 800;
+}
+
+.nav-login-button:hover {
+  background: #1e293b;
+}
+
+.home-hero {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 56px 24px 42px;
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 42px;
+  align-items: center;
+}
+
+.home-badge {
+  display: inline-block;
+  background: white;
+  border: 1px solid #dbeafe;
+  color: #2563eb;
+  padding: 9px 14px;
+  border-radius: 999px;
+  font-weight: 800;
+  margin-bottom: 18px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+}
+
+.home-hero h2 {
+  margin: 0;
+  font-size: clamp(40px, 6vw, 72px);
+  line-height: 0.96;
+  letter-spacing: -2px;
+  color: #0f172a;
+}
+
+.home-hero-content > p {
+  font-size: 19px;
+  line-height: 1.7;
+  color: #475569;
+  max-width: 690px;
+  margin: 24px 0;
+}
+
+.home-actions {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.home-primary-button,
+.home-secondary-button {
+  text-decoration: none;
+  padding: 14px 20px;
+  border-radius: 14px;
+  font-weight: 900;
+}
+
+.home-primary-button {
+  background: #2563eb;
+  color: white;
+  box-shadow: 0 12px 25px rgba(37, 99, 235, 0.25);
+}
+
+.home-primary-button:hover {
+  background: #1d4ed8;
+}
+
+.home-secondary-button {
+  background: white;
+  color: #0f172a;
+  border: 1px solid #e2e8f0;
+}
+
+.home-card-preview {
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid #e2e8f0;
+  border-radius: 28px;
+  padding: 24px;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.14);
+  backdrop-filter: blur(12px);
+}
+
+.preview-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.preview-header strong {
+  font-size: 20px;
+}
+
+.preview-header p {
+  color: #64748b;
+  margin: 4px 0 0;
+}
+
+.preview-status {
+  background: #dcfce7;
+  color: #166534;
+  font-weight: 900;
+  padding: 7px 10px;
+  border-radius: 999px;
+}
+
+.preview-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.preview-grid div {
+  background: #f8fafc;
+  border-radius: 18px;
+  padding: 18px;
+  border: 1px solid #e2e8f0;
+}
+
+.preview-grid span {
+  display: block;
+  color: #64748b;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.preview-grid strong {
+  font-size: 24px;
+}
+
+.preview-alert {
+  margin-top: 18px;
+  padding: 14px;
+  border-radius: 16px;
+  background: #fef3c7;
+  color: #92400e;
+  font-weight: 800;
+}
+
+.home-features {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 24px 24px 64px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 18px;
+}
+
+.feature-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  padding: 22px;
+  border-radius: 22px;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.06);
+}
+
+.feature-card span {
+  font-size: 30px;
+}
+
+.feature-card h3 {
+  margin: 12px 0 8px;
+  font-size: 20px;
+}
+
+.feature-card p {
+  color: #64748b;
+  line-height: 1.5;
+  margin: 0;
+}
+
+@media (max-width: 900px) {
+  .home-hero {
+    grid-template-columns: 1fr;
+    padding-top: 32px;
+  }
+
+  .home-navbar {
+    padding: 18px;
+  }
+
+  .home-card-preview {
+    order: -1;
+  }
+}
