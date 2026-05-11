@@ -6,6 +6,9 @@ const copy = {
   en: {
     appName: "Everyday Helper",
     className: "Accessibility and Assistive Technology",
+    medicationTitle: "Medication Reminders",
+    medicationIntro:
+      "Track medication times, confirm doses with photos, manage refills, and keep caregivers updated.",
     intro:
       "A calm, large-print medication helper with custom schedules, photo confirmation, caregiver updates, and refill support.",
     language: "Language",
@@ -122,6 +125,9 @@ const copy = {
   es: {
     appName: "Everyday Helper",
     className: "Accesibilidad y Tecnologia de Asistencia",
+    medicationTitle: "Recordatorios de Medicamentos",
+    medicationIntro:
+      "Controle horarios, confirme dosis con fotos, gestione recargas y mantenga informado al cuidador.",
     intro:
       "Ayuda tranquila con letra grande, horarios personalizados, foto de confirmacion, cuidador y recargas.",
     language: "Idioma",
@@ -1142,7 +1148,6 @@ export default function App() {
 
       <header className="site-header">
         <div>
-          <p className="eyebrow">{t.className}</p>
           <strong>{t.appName}</strong>
           <div className="date-strip">
             <span>{t.today}: {format(today, "EEEE, MMMM d, yyyy")}</span>
@@ -1181,22 +1186,7 @@ export default function App() {
         </nav>
       </header>
 
-      {activeTab === "medication" && (
-      <>
-      <section className="hero-panel" aria-labelledby="page-title">
-        <div>
-          <h1 id="page-title">{t.appName}</h1>
-          <p className="intro">{t.intro}</p>
-        </div>
-
-        <div className={alertModes.visual ? "visual-alert active" : "visual-alert"}>
-          <span aria-hidden="true">!</span>
-          <strong>{currentDose ? formatTime(currentDose.time) : "--"}</strong>
-          <p>{currentDose?.name || "No reminders"}</p>
-        </div>
-      </section>
-
-      <section className="control-strip" aria-label={t.accessibility}>
+      <section className="control-strip global-controls" aria-label={t.accessibility}>
         <label>
           <span>{t.language}</span>
           <select
@@ -1216,6 +1206,22 @@ export default function App() {
           onChange={setHighContrast}
         />
         <Toggle checked label={t.screenReader} disabled />
+      </section>
+
+      {activeTab === "medication" && (
+      <>
+      <section className="hero-panel" aria-labelledby="page-title">
+        <div>
+          <p className="eyebrow">{t.userTab}</p>
+          <h1 id="page-title">{t.medicationTitle}</h1>
+          <p className="intro">{t.medicationIntro}</p>
+        </div>
+
+        <div className={alertModes.visual ? "visual-alert active" : "visual-alert"}>
+          <span aria-hidden="true">!</span>
+          <strong>{currentDose ? formatTime(currentDose.time) : "--"}</strong>
+          <p>{currentDose?.name || "No reminders"}</p>
+        </div>
       </section>
 
       <div className="dashboard-grid">
@@ -1472,46 +1478,6 @@ export default function App() {
               onChange={() => toggleAlertMode("vibration")}
             />
           </div>
-        </section>
-
-        <section className="dose-card" aria-labelledby="pharmacy-title">
-          <div className="section-heading">
-            <p className="eyebrow">{t.pharmacy}</p>
-            <h2 id="pharmacy-title">{t.refillDue}</h2>
-          </div>
-
-          <div
-            className="refill-meter"
-            aria-label={`${currentDose?.pillsLeft || 0} ${t.pillsLeft}`}
-          >
-            <span
-              style={{
-                width: `${Math.min((currentDose?.pillsLeft || 0) * 5, 100)}%`
-              }}
-            />
-          </div>
-          <p className="supporting-text">
-            {currentDose?.name || "No medication"}: {currentDose?.pillsLeft || 0}{" "}
-            {t.pillsLeft}
-          </p>
-          <button type="button" className="secondary-button" onClick={requestRefill}>
-            {t.refill}
-          </button>
-        </section>
-
-        <section className="dose-card" aria-labelledby="caregiver-title">
-          <div className="section-heading">
-            <p className="eyebrow">{t.caregiver}</p>
-            <h2 id="caregiver-title">Maria Chen</h2>
-          </div>
-
-          <p className="supporting-text">
-            Sends missed-dose alerts, confirmation updates, and refill requests
-            to the selected caregiver contact.
-          </p>
-          <button type="button" className="secondary-button" onClick={notifyCaregiver}>
-            {t.notify}
-          </button>
         </section>
 
         <section className="dose-card activity-card" aria-labelledby="activity-title">
