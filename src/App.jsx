@@ -65,7 +65,6 @@ const copy = {
     dailyTitle: "Daily Life Reminders",
     dailyIntro:
       "Create accessible reminders for appointments, laundry, plants, pets, household tasks, hydration, self-care, or anything else in daily life.",
-    dailyCategories: "Reminder categories",
     dailyList: "Today daily reminders",
     addDailyReminder: "Add daily reminder",
     reminderTitle: "Reminder title",
@@ -96,6 +95,7 @@ const copy = {
     voiceControl: "Voice control",
     startListening: "Start listening",
     aiOutput: "AI cooking guidance",
+    clearAi: "Clear AI",
     keyMissing:
       "Gemini key missing. Paste your key in src/geminiConfig.js to enable AI features.",
     aiError: "Gemini request failed. Check your key and network connection.",
@@ -107,7 +107,17 @@ const copy = {
     noCareUpdates: "No caregiver updates yet.",
     photoEvidence: "Photo evidence",
     scheduleSnapshot: "Reminder schedule",
-    noPhotoAttached: "No photo attached"
+    noPhotoAttached: "No photo attached",
+    messages: "Messages",
+    messagePlaceholder: "Type a message...",
+    sendMessage: "Send message",
+    patient: "Patient",
+    caregiverName: "Caregiver",
+    medicationActivity: "Medication activity",
+    dailyActivity: "Daily life activity",
+    cookingActivity: "Cooking activity",
+    messageActivity: "Messages",
+    noMessages: "No messages yet."
   },
   es: {
     appName: "Everyday Helper",
@@ -171,7 +181,6 @@ const copy = {
     dailyTitle: "Recordatorios de Vida Diaria",
     dailyIntro:
       "Cree recordatorios accesibles para citas, lavanderia, plantas, mascotas, tareas del hogar, hidratacion, cuidado personal o cualquier rutina diaria.",
-    dailyCategories: "Categorias",
     dailyList: "Recordatorios de hoy",
     addDailyReminder: "Agregar recordatorio diario",
     reminderTitle: "Titulo del recordatorio",
@@ -202,6 +211,7 @@ const copy = {
     voiceControl: "Control por voz",
     startListening: "Escuchar",
     aiOutput: "Guia de cocina con IA",
+    clearAi: "Limpiar IA",
     keyMissing:
       "Falta la clave de Gemini. Pegue su clave en src/geminiConfig.js.",
     aiError: "La solicitud a Gemini fallo. Revise su clave y conexion.",
@@ -213,7 +223,17 @@ const copy = {
     noCareUpdates: "Aun no hay actualizaciones.",
     photoEvidence: "Evidencia con foto",
     scheduleSnapshot: "Horario de recordatorios",
-    noPhotoAttached: "Sin foto adjunta"
+    noPhotoAttached: "Sin foto adjunta",
+    messages: "Mensajes",
+    messagePlaceholder: "Escriba un mensaje...",
+    sendMessage: "Enviar mensaje",
+    patient: "Paciente",
+    caregiverName: "Cuidador",
+    medicationActivity: "Actividad de medicamentos",
+    dailyActivity: "Actividad diaria",
+    cookingActivity: "Actividad de cocina",
+    messageActivity: "Mensajes",
+    noMessages: "Aun no hay mensajes."
   }
 };
 
@@ -348,51 +368,6 @@ const emptyDailyReminder = {
   notes: ""
 };
 
-const cookingFeatures = [
-  {
-    icon: "📖",
-    title: "Step-by-Step Guidance",
-    tone: "green",
-    text:
-      "One instruction at a time with large fonts, high contrast, and audio narration."
-  },
-  {
-    icon: "⏱️",
-    title: "Timers & Alerts",
-    tone: "teal",
-    text:
-      "Automatic cooking timers with visual countdowns, sound alerts, and phone vibration."
-  },
-  {
-    icon: "🥦",
-    title: "Recipe Simplification",
-    tone: "purple",
-    text:
-      "Gemini breaks complex recipes into accessible steps, substitutions, and safety notes."
-  },
-  {
-    icon: "🗣️",
-    title: "Voice Control",
-    tone: "orange",
-    text:
-      "Hands-free commands such as next, back, and repeat for users holding utensils."
-  },
-  {
-    icon: "🌡️",
-    title: "Safety Alerts",
-    tone: "pink",
-    text:
-      "Stove-on reminders, temperature warnings, and caregiver-friendly safety prompts."
-  },
-  {
-    icon: "📷",
-    title: "Visual Food Identification",
-    tone: "blue",
-    text:
-      "Upload a food photo so Gemini can describe visible ingredients or labels."
-  }
-];
-
 const emptyReminder = {
   name: "",
   pillsLeft: "30",
@@ -427,6 +402,33 @@ function makeId() {
   return crypto.randomUUID?.() || `${Date.now()}-${Math.random()}`;
 }
 
+function cleanGeminiLine(line) {
+  return line
+    .replace(/^#{1,6}\s*/, "")
+    .replace(/^[-*]\s*/, "")
+    .replace(/^\d+[\).]\s*/, "")
+    .replace(/\*\*/g, "")
+    .replace(/__/g, "")
+    .replace(/\*/g, "")
+    .replace(/`/g, "")
+    .trim();
+}
+
+function cleanGeminiText(text) {
+  return text
+    .split(/\n+/)
+    .map(cleanGeminiLine)
+    .filter(Boolean)
+    .join("\n");
+}
+
+function extractCookingSteps(text) {
+  return text
+    .split(/\n+/)
+    .map(cleanGeminiLine)
+    .filter((line) => line.length > 12);
+}
+
 export default function App() {
   const [language, setLanguage] = useState("en");
   const today = new Date();
@@ -450,6 +452,30 @@ export default function App() {
   const [timerMinutes, setTimerMinutes] = useState("5");
   const [timerSeconds, setTimerSeconds] = useState(0);
   const [timerRunning, setTimerRunning] = useState(false);
+  const [messageDrafts, setMessageDrafts] = useState({
+    patient: "",
+    caregiver: ""
+  });
+  const [messages, setMessages] = useState([
+    {
+      id: 1,
+      sender: "caregiver",
+      time: "8:45 AM",
+      text: "Good morning. Please send me a photo when you take your noon medication."
+    },
+    {
+      id: 2,
+      sender: "patient",
+      time: "9:05 AM",
+      text: "Okay, I will."
+    }
+  ]);
+  const [openCareSections, setOpenCareSections] = useState({
+    medication: true,
+    daily: true,
+    cooking: true,
+    messages: true
+  });
   const [alertModes, setAlertModes] = useState({
     visual: true,
     audio: true,
@@ -472,7 +498,8 @@ export default function App() {
       time: "12:00 PM",
       title: "Reminder prepared",
       detail: "Lisinopril reminder is due today at 12:30 PM.",
-      photo: ""
+      photo: "",
+      category: "medication"
     }
   ]);
   const [liveMessage, setLiveMessage] = useState("");
@@ -505,6 +532,10 @@ export default function App() {
     );
   }, [dailyReminders]);
 
+  const formattedCookingOutput = useMemo(() => {
+    return cookingOutput.split(/\n+/).map(cleanGeminiLine).filter(Boolean);
+  }, [cookingOutput]);
+
   useEffect(() => {
     return () => stopCamera();
   }, []);
@@ -530,6 +561,13 @@ export default function App() {
             );
           }
 
+          addCaregiverUpdate(
+            "Cooking timer finished",
+            "A cooking timer finished on the Cooking page.",
+            "",
+            "cooking"
+          );
+
           return 0;
         }
 
@@ -547,7 +585,7 @@ export default function App() {
     setLiveMessage(message);
   }
 
-  function addCaregiverUpdate(title, detail, photo = "") {
+  function addCaregiverUpdate(title, detail, photo = "", category = "medication") {
     setCaregiverUpdates((items) =>
       [
         {
@@ -555,11 +593,46 @@ export default function App() {
           time: format(new Date(), "h:mm a"),
           title,
           detail,
-          photo
+          photo,
+          category
         },
         ...items
       ].slice(0, 10)
     );
+  }
+
+  function sendMessage(sender) {
+    const text = messageDrafts[sender].trim();
+
+    if (!text) {
+      return;
+    }
+
+    const message = {
+      id: makeId(),
+      sender,
+      time: format(new Date(), "h:mm a"),
+      text
+    };
+
+    setMessages((items) => [...items, message]);
+    setMessageDrafts((drafts) => ({
+      ...drafts,
+      [sender]: ""
+    }));
+    addCaregiverUpdate(
+      sender === "caregiver" ? "Caregiver message sent" : "Patient message sent",
+      text,
+      "",
+      "messages"
+    );
+  }
+
+  function toggleCareSection(section) {
+    setOpenCareSections((current) => ({
+      ...current,
+      [section]: !current[section]
+    }));
   }
 
   function updateForm(field, value) {
@@ -599,13 +672,30 @@ export default function App() {
     setDailyReminders((items) => [...items, reminder]);
     setDailyForm(emptyDailyReminder);
     addActivity(`${formatTime(reminder.time)}: ${title} ${t.dailyAdded}`);
+    addCaregiverUpdate(
+      "Daily reminder added",
+      `${title} was scheduled for ${formatTime(reminder.time)}.`,
+      "",
+      "daily"
+    );
   }
 
   function toggleDailyReminder(id) {
+    const reminder = dailyReminders.find((item) => item.id === id);
     setDailyReminders((items) =>
       items.map((item) =>
         item.id === id ? { ...item, completed: !item.completed } : item
       )
+    );
+    addCaregiverUpdate(
+      reminder?.completed ? "Daily reminder reopened" : "Daily reminder completed",
+      reminder
+        ? `${reminder.title} at ${formatTime(reminder.time)} was ${
+            reminder.completed ? "reopened" : "completed"
+          }.`
+        : "Daily reminder status changed.",
+      "",
+      "daily"
     );
   }
 
@@ -613,6 +703,12 @@ export default function App() {
     const reminder = dailyReminders.find((item) => item.id === id);
     setDailyReminders((items) => items.filter((item) => item.id !== id));
     addActivity(`${reminder?.title || "Daily reminder"} ${t.dailyDeleted}`);
+    addCaregiverUpdate(
+      "Daily reminder deleted",
+      `${reminder?.title || "A daily reminder"} was deleted.`,
+      "",
+      "daily"
+    );
   }
 
   async function askGemini(parts) {
@@ -662,15 +758,16 @@ export default function App() {
         : `Simplify this recipe or cooking goal for an accessibility-focused cooking assistant. Include ingredients, easy substitutions, allergen flags when obvious, safety notes, and simple steps:\n\n${recipeInput}`;
 
     try {
-      const text = await askGemini([{ text: prompt }]);
+      const text = cleanGeminiText(await askGemini([{ text: prompt }]));
       setCookingOutput(text);
-      const steps = text
-        .split(/\n+/)
-        .map((line) => line.replace(/^\d+[\).]\s*/, "").trim())
-        .filter((line) => line.length > 12)
-        .slice(0, 12);
-      setCookingSteps(steps);
+      setCookingSteps(extractCookingSteps(text));
       setCurrentCookingStep(0);
+      addCaregiverUpdate(
+        mode === "steps" ? "Cooking step guide generated" : "Recipe simplified",
+        recipeInput,
+        "",
+        "cooking"
+      );
     } catch (error) {
       setCookingError(error.message || t.aiError);
     } finally {
@@ -708,10 +805,10 @@ export default function App() {
     setCookingError("");
 
     try {
-      const text = await askGemini([
+      const text = cleanGeminiText(await askGemini([
         {
           text:
-            "You are an accessible cooking assistant. Describe the visible food or ingredient labels in this image. Mention possible ingredients, expiry dates if readable, safety concerns, and simple meal ideas. Do not claim certainty if unclear."
+            "You are an accessible cooking assistant. Describe the visible food or ingredient labels in this image. Mention possible ingredients, expiry dates if readable, safety concerns, and then provide a short accessible step-by-step cooking or prep suggestion using what you can identify. Do not claim certainty if unclear."
         },
         {
           inline_data: {
@@ -719,12 +816,33 @@ export default function App() {
             data: cookingImage.data
           }
         }
-      ]);
+      ]));
       setCookingOutput(text);
+      setCookingSteps(extractCookingSteps(text));
+      setCurrentCookingStep(0);
+      addCaregiverUpdate(
+        "Food image identified",
+        "Gemini analyzed an uploaded food or label photo.",
+        cookingImagePreview,
+        "cooking"
+      );
     } catch (error) {
       setCookingError(error.message || t.aiError);
     } finally {
       setCookingLoading(false);
+    }
+  }
+
+  function clearCookingAi() {
+    setCookingOutput("Gemini guidance will appear here after you ask for help.");
+    setCookingSteps([]);
+    setCurrentCookingStep(0);
+    setCookingError("");
+    setCookingImage(null);
+    setCookingImagePreview("");
+
+    if (foodInputRef.current) {
+      foodInputRef.current.value = "";
     }
   }
 
@@ -1408,6 +1526,17 @@ export default function App() {
             ))}
           </ul>
         </section>
+
+        <MessagePanel
+          currentSender="patient"
+          messages={messages}
+          draft={messageDrafts.patient}
+          setDraft={(value) =>
+            setMessageDrafts((drafts) => ({ ...drafts, patient: value }))
+          }
+          sendMessage={() => sendMessage("patient")}
+          t={t}
+        />
       </div>
       </>
       )}
@@ -1423,30 +1552,6 @@ export default function App() {
           </section>
 
           <div className="daily-grid">
-            <section className="dose-card daily-categories-card" aria-labelledby="daily-categories-title">
-              <div className="section-heading">
-                <p className="eyebrow">{t.dailyCategories}</p>
-                <h2 id="daily-categories-title">Choose any kind of reminder</h2>
-              </div>
-
-              <div className="life-category-grid">
-                {dailyCategories.map((category) => (
-                  <article className={`life-category-card ${category.tone}`} key={category.id}>
-                    <header>
-                      <span aria-hidden="true">{category.icon}</span>
-                      <h3>{category.title}</h3>
-                    </header>
-
-                    <ul>
-                      {category.examples.map((example) => (
-                        <li key={example}>{example}</li>
-                      ))}
-                    </ul>
-                  </article>
-                ))}
-              </div>
-            </section>
-
             <section className="dose-card" aria-labelledby="add-daily-title">
               <div className="section-heading">
                 <p className="eyebrow">{t.addDailyReminder}</p>
@@ -1576,6 +1681,17 @@ export default function App() {
                 </div>
               )}
             </section>
+
+            <MessagePanel
+              currentSender="patient"
+              messages={messages}
+              draft={messageDrafts.patient}
+              setDraft={(value) =>
+                setMessageDrafts((drafts) => ({ ...drafts, patient: value }))
+              }
+              sendMessage={() => sendMessage("patient")}
+              t={t}
+            />
           </div>
         </>
       )}
@@ -1591,25 +1707,6 @@ export default function App() {
           </section>
 
           <div className="cooking-grid">
-            <section className="dose-card cooking-feature-card" aria-labelledby="cooking-features-title">
-              <div className="section-heading">
-                <p className="eyebrow">Gemini-powered support</p>
-                <h2 id="cooking-features-title">Accessible cooking features</h2>
-              </div>
-
-              <div className="cooking-feature-grid">
-                {cookingFeatures.map((feature) => (
-                  <article className={`cooking-feature ${feature.tone}`} key={feature.title}>
-                    <h3>
-                      <span aria-hidden="true">{feature.icon}</span>
-                      {feature.title}
-                    </h3>
-                    <p>{feature.text}</p>
-                  </article>
-                ))}
-              </div>
-            </section>
-
             <section className="dose-card cooking-assistant-card" aria-labelledby="recipe-title">
               <div className="section-heading">
                 <p className="eyebrow">Gemini</p>
@@ -1690,7 +1787,69 @@ export default function App() {
               </button>
             </section>
 
-            <section className="dose-card" aria-labelledby="timer-title">
+            <section className="dose-card cooking-output-card" aria-labelledby="ai-output-title">
+              <div className="section-heading">
+                <p className="eyebrow">{t.aiOutput}</p>
+                <h2 id="ai-output-title">
+                  {cookingLoading ? t.loading : "Step-by-step guidance"}
+                </h2>
+              </div>
+
+              {cookingError && <p className="camera-error">{cookingError}</p>}
+
+              {cookingSteps.length > 0 && (
+                <div className="current-step">
+                  <span>
+                    Step {currentCookingStep + 1} of {cookingSteps.length}
+                  </span>
+                  <p>{cookingSteps[currentCookingStep]}</p>
+                </div>
+              )}
+
+              <div className="step-controls">
+                <button
+                  type="button"
+                  className="ghost-button"
+                  disabled={currentCookingStep === 0}
+                  onClick={() => moveCookingStep(-1)}
+                >
+                  {t.previousStep}
+                </button>
+                <button type="button" className="secondary-button" onClick={speakCurrentStep}>
+                  {t.readStep}
+                </button>
+                <button
+                  type="button"
+                  className="ghost-button"
+                  disabled={
+                    cookingSteps.length === 0 ||
+                    currentCookingStep >= cookingSteps.length - 1
+                  }
+                  onClick={() => moveCookingStep(1)}
+                >
+                  {t.nextStep}
+                </button>
+                <button type="button" className="text-button" onClick={startVoiceCommands}>
+                  {t.startListening}
+                </button>
+                <button type="button" className="delete-button" onClick={clearCookingAi}>
+                  {t.clearAi}
+                </button>
+              </div>
+
+              <div className="ai-output">
+                {formattedCookingOutput.map((line, index) => (
+                  <p
+                    className={index === 0 ? "ai-output-title" : undefined}
+                    key={`${line}-${index}`}
+                  >
+                    {line}
+                  </p>
+                ))}
+              </div>
+            </section>
+
+            <section className="dose-card cooking-timer-card" aria-labelledby="timer-title">
               <div className="section-heading">
                 <p className="eyebrow">{t.cookingTimer}</p>
                 <h2 id="timer-title">Timers & alerts</h2>
@@ -1721,42 +1880,16 @@ export default function App() {
               </div>
             </section>
 
-            <section className="dose-card cooking-output-card" aria-labelledby="ai-output-title">
-              <div className="section-heading">
-                <p className="eyebrow">{t.aiOutput}</p>
-                <h2 id="ai-output-title">
-                  {cookingLoading ? t.loading : "Step-by-step guidance"}
-                </h2>
-              </div>
-
-              {cookingError && <p className="camera-error">{cookingError}</p>}
-
-              {cookingSteps.length > 0 && (
-                <div className="current-step">
-                  <span>
-                    Step {currentCookingStep + 1} of {cookingSteps.length}
-                  </span>
-                  <p>{cookingSteps[currentCookingStep]}</p>
-                </div>
-              )}
-
-              <div className="step-controls">
-                <button type="button" className="ghost-button" onClick={() => moveCookingStep(-1)}>
-                  {t.previousStep}
-                </button>
-                <button type="button" className="secondary-button" onClick={speakCurrentStep}>
-                  {t.readStep}
-                </button>
-                <button type="button" className="ghost-button" onClick={() => moveCookingStep(1)}>
-                  {t.nextStep}
-                </button>
-                <button type="button" className="text-button" onClick={startVoiceCommands}>
-                  {t.startListening}
-                </button>
-              </div>
-
-              <pre className="ai-output">{cookingOutput}</pre>
-            </section>
+            <MessagePanel
+              currentSender="patient"
+              messages={messages}
+              draft={messageDrafts.patient}
+              setDraft={(value) =>
+                setMessageDrafts((drafts) => ({ ...drafts, patient: value }))
+              }
+              sendMessage={() => sendMessage("patient")}
+              t={t}
+            />
           </div>
         </>
       )}
@@ -1786,34 +1919,56 @@ export default function App() {
             </div>
           </section>
 
-          <section className="dose-card activity-card" aria-labelledby="care-log-title">
-            <div className="section-heading">
-              <p className="eyebrow">{t.careLog}</p>
-              <h2 id="care-log-title">Latest user updates</h2>
-            </div>
+          <CareActivitySection
+            id="medication"
+            title={t.medicationActivity}
+            open={openCareSections.medication}
+            onToggle={() => toggleCareSection("medication")}
+            updates={caregiverUpdates.filter((item) => item.category === "medication")}
+            t={t}
+          />
 
-            {caregiverUpdates.length === 0 ? (
-              <p className="empty-state">{t.noCareUpdates}</p>
-            ) : (
-              <div className="care-log">
-                {caregiverUpdates.map((item) => (
-                  <article className="care-log-item" key={item.id}>
-                    <div>
-                      <time>{item.time}</time>
-                      <h3>{item.title}</h3>
-                      <p>{item.detail}</p>
-                    </div>
+          <CareActivitySection
+            id="daily"
+            title={t.dailyActivity}
+            open={openCareSections.daily}
+            onToggle={() => toggleCareSection("daily")}
+            updates={caregiverUpdates.filter((item) => item.category === "daily")}
+            t={t}
+          />
 
-                    <div className="care-photo">
-                      {item.photo ? (
-                        <img src={item.photo} alt={`${item.title} ${t.photoEvidence}`} />
-                      ) : (
-                        <span>{t.noPhotoAttached}</span>
-                      )}
-                    </div>
-                  </article>
-                ))}
-              </div>
+          <CareActivitySection
+            id="cooking"
+            title={t.cookingActivity}
+            open={openCareSections.cooking}
+            onToggle={() => toggleCareSection("cooking")}
+            updates={caregiverUpdates.filter((item) => item.category === "cooking")}
+            t={t}
+          />
+
+          <section className="dose-card message-card" aria-labelledby="caregiver-message-title">
+            <button
+              type="button"
+              className="collapse-button"
+              onClick={() => toggleCareSection("messages")}
+              aria-expanded={openCareSections.messages}
+            >
+              <span>{t.messageActivity}</span>
+              <strong>{openCareSections.messages ? "Hide" : "Show"}</strong>
+            </button>
+
+            {openCareSections.messages && (
+              <MessagePanel
+                currentSender="caregiver"
+                messages={messages}
+                draft={messageDrafts.caregiver}
+                setDraft={(value) =>
+                  setMessageDrafts((drafts) => ({ ...drafts, caregiver: value }))
+                }
+                sendMessage={() => sendMessage("caregiver")}
+                t={t}
+                embedded
+              />
             )}
           </section>
 
@@ -1861,5 +2016,111 @@ function Toggle({ checked, disabled = false, label, onChange }) {
       <span aria-hidden="true" />
       <strong>{label}</strong>
     </label>
+  );
+}
+
+function CareActivitySection({ id, title, open, onToggle, updates, t }) {
+  return (
+    <section className="dose-card activity-card" aria-labelledby={`${id}-activity-title`}>
+      <button
+        type="button"
+        className="collapse-button"
+        onClick={onToggle}
+        aria-expanded={open}
+      >
+        <span id={`${id}-activity-title`}>{title}</span>
+        <strong>{open ? "Hide" : "Show"}</strong>
+      </button>
+
+      {open &&
+        (updates.length === 0 ? (
+          <p className="empty-state">{t.noCareUpdates}</p>
+        ) : (
+          <div className="care-log">
+            {updates.map((item) => (
+              <article className="care-log-item" key={item.id}>
+                <div>
+                  <time>{item.time}</time>
+                  <h3>{item.title}</h3>
+                  <p>{item.detail}</p>
+                </div>
+
+                <div className="care-photo">
+                  {item.photo ? (
+                    <img src={item.photo} alt={`${item.title} ${t.photoEvidence}`} />
+                  ) : (
+                    <span>{t.noPhotoAttached}</span>
+                  )}
+                </div>
+              </article>
+            ))}
+          </div>
+        ))}
+    </section>
+  );
+}
+
+function MessagePanel({
+  currentSender,
+  messages,
+  draft,
+  setDraft,
+  sendMessage,
+  t,
+  embedded = false
+}) {
+  return (
+    <section
+      className={embedded ? "message-panel embedded" : "dose-card message-panel"}
+      aria-labelledby={`${currentSender}-messages-title`}
+    >
+      {!embedded && (
+        <div className="section-heading">
+          <p className="eyebrow">{t.messages}</p>
+          <h2 id={`${currentSender}-messages-title`}>
+            {currentSender === "caregiver" ? t.caregiverName : t.patient} chat
+          </h2>
+        </div>
+      )}
+
+      <div className="message-thread">
+        {messages.length === 0 ? (
+          <p className="empty-state">{t.noMessages}</p>
+        ) : (
+          messages.map((message) => (
+            <article
+              className={
+                message.sender === currentSender
+                  ? "message-bubble own"
+                  : "message-bubble"
+              }
+              key={message.id}
+            >
+              <strong>
+                {message.sender === "caregiver" ? t.caregiverName : t.patient}
+              </strong>
+              <time>{message.time}</time>
+              <p>{message.text}</p>
+            </article>
+          ))
+        )}
+      </div>
+
+      <div className="message-compose">
+        <input
+          value={draft}
+          onChange={(event) => setDraft(event.target.value)}
+          placeholder={t.messagePlaceholder}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              sendMessage();
+            }
+          }}
+        />
+        <button type="button" className="secondary-button" onClick={sendMessage}>
+          {t.sendMessage}
+        </button>
+      </div>
+    </section>
   );
 }
