@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { compareAsc, format, parse } from "date-fns";
 
 const copy = {
   en: {
-    appName: "Smart Medication Reminder",
+    appName: "Everyday Helper",
     className: "Accessibility and Assistive Technology",
     intro:
-      "A calmer, large-print medication page with reminders, camera confirmation, caregiver updates, and refill support.",
+      "A calm, large-print medication helper with custom schedules, camera review, caregiver updates, and refill support.",
     language: "Language",
     alertModes: "Alert modes",
     visual: "Visual",
@@ -41,21 +42,50 @@ const copy = {
     addReminder: "Add prescription reminder",
     medicationName: "Medication name",
     dosage: "Dosage",
+    times: "Reminder times",
     time: "Time",
     instructions: "Instructions",
     quantity: "Pills left",
+    pillCount: "Pills expected",
     status: "Status",
+    addAnotherTime: "Add another time",
+    removeTime: "Remove time",
     saveReminder: "Save reminder",
     deleteReminder: "Delete",
     cameraUnavailable: "Camera could not start. Use photo upload instead.",
     reminderAdded: "Prescription reminder added.",
-    reminderDeleted: "Prescription reminder deleted."
+    reminderDeleted: "Prescription reminder deleted.",
+    photoReview: "Photo review",
+    expectedPills: "Expected pills",
+    detectedPills: "Detected pills",
+    runReview: "Review photo",
+    approveDose: "Approve dose",
+    reviewNeeded: "Needs photo review",
+    reviewMatch: "Matches expected dose",
+    reviewMismatch: "Dose mismatch",
+    reviewHelp:
+      "For this prototype, enter the detected pill count after looking at the image. A real version would connect this step to a vision model.",
+    simulation: "Simulate detection",
+    approved: "Dose approved from photo review.",
+    mismatch:
+      "Detected count does not match the expected dose. Caregiver review recommended.",
+    today: "Today",
+    userTab: "Medication",
+    caregiverTab: "Caregiver",
+    caregiverDashboard: "Caregiver updates",
+    caregiverIntro:
+      "Medication status, confirmation photos, refill notices, and the full reminder schedule for the person you support.",
+    careLog: "Care update log",
+    noCareUpdates: "No caregiver updates yet.",
+    photoEvidence: "Photo evidence",
+    scheduleSnapshot: "Reminder schedule",
+    noPhotoAttached: "No photo attached"
   },
   es: {
-    appName: "Recordatorio Inteligente de Medicamentos",
+    appName: "Everyday Helper",
     className: "Accesibilidad y Tecnologia de Asistencia",
     intro:
-      "Una pagina tranquila con letra grande, recordatorios, camara, cuidador y recargas.",
+      "Ayuda tranquila con letra grande, horarios personalizados, camara, cuidador y recargas.",
     language: "Idioma",
     alertModes: "Tipos de alerta",
     visual: "Visual",
@@ -91,15 +121,44 @@ const copy = {
     addReminder: "Agregar recordatorio",
     medicationName: "Nombre del medicamento",
     dosage: "Dosis",
+    times: "Horas de recordatorio",
     time: "Hora",
     instructions: "Instrucciones",
     quantity: "Pastillas restantes",
+    pillCount: "Pastillas esperadas",
     status: "Estado",
+    addAnotherTime: "Agregar otra hora",
+    removeTime: "Eliminar hora",
     saveReminder: "Guardar recordatorio",
     deleteReminder: "Eliminar",
     cameraUnavailable: "No se pudo abrir la camara. Use subir foto.",
     reminderAdded: "Recordatorio agregado.",
-    reminderDeleted: "Recordatorio eliminado."
+    reminderDeleted: "Recordatorio eliminado.",
+    photoReview: "Revision de foto",
+    expectedPills: "Pastillas esperadas",
+    detectedPills: "Pastillas detectadas",
+    runReview: "Revisar foto",
+    approveDose: "Aprobar dosis",
+    reviewNeeded: "Necesita revision",
+    reviewMatch: "Coincide con la dosis",
+    reviewMismatch: "Dosis no coincide",
+    reviewHelp:
+      "Para este prototipo, ingrese el numero detectado despues de mirar la imagen. Una version real usaria un modelo de vision.",
+    simulation: "Simular deteccion",
+    approved: "Dosis aprobada por revision de foto.",
+    mismatch:
+      "El numero detectado no coincide con la dosis esperada. Se recomienda revisar con cuidador.",
+    today: "Hoy",
+    userTab: "Medicamentos",
+    caregiverTab: "Cuidador",
+    caregiverDashboard: "Actualizaciones para cuidador",
+    caregiverIntro:
+      "Estado de medicamentos, fotos de confirmacion, avisos de recarga y el horario completo.",
+    careLog: "Registro de cuidado",
+    noCareUpdates: "Aun no hay actualizaciones.",
+    photoEvidence: "Evidencia con foto",
+    scheduleSnapshot: "Horario de recordatorios",
+    noPhotoAttached: "Sin foto adjunta"
   }
 };
 
@@ -109,6 +168,7 @@ const initialSchedule = [
     time: "08:00",
     name: "Metformin",
     dose: "500 mg",
+    pillCount: 1,
     instructions: "Take with breakfast",
     status: "taken",
     pillsLeft: 24
@@ -118,6 +178,7 @@ const initialSchedule = [
     time: "12:30",
     name: "Lisinopril",
     dose: "10 mg",
+    pillCount: 1,
     instructions: "Take with a full glass of water",
     status: "dueNow",
     pillsLeft: 7
@@ -127,6 +188,7 @@ const initialSchedule = [
     time: "20:00",
     name: "Atorvastatin",
     dose: "20 mg",
+    pillCount: 1,
     instructions: "Take after dinner",
     status: "upcoming",
     pillsLeft: 18
@@ -135,11 +197,17 @@ const initialSchedule = [
 
 const emptyReminder = {
   name: "",
-  dose: "",
-  time: "09:00",
-  instructions: "",
   pillsLeft: "30",
-  status: "upcoming"
+  times: [
+    {
+      id: 1,
+      time: "09:00",
+      dose: "",
+      pillCount: "1",
+      instructions: "",
+      status: "upcoming"
+    }
+  ]
 };
 
 const statusClass = {
@@ -149,17 +217,22 @@ const statusClass = {
   missed: "danger"
 };
 
-function formatTime(time) {
-  const [hourValue, minute] = time.split(":");
-  const hour = Number(hourValue);
-  const period = hour >= 12 ? "PM" : "AM";
-  const displayHour = hour % 12 || 12;
+function parseReminderTime(time) {
+  return parse(time, "HH:mm", new Date());
+}
 
-  return `${displayHour}:${minute} ${period}`;
+function formatTime(time) {
+  return format(parseReminderTime(time), "h:mm a");
+}
+
+function makeId() {
+  return crypto.randomUUID?.() || `${Date.now()}-${Math.random()}`;
 }
 
 export default function App() {
   const [language, setLanguage] = useState("en");
+  const today = new Date();
+  const [activeTab, setActiveTab] = useState("medication");
   const [schedule, setSchedule] = useState(initialSchedule);
   const [form, setForm] = useState(emptyReminder);
   const [alertModes, setAlertModes] = useState({
@@ -172,10 +245,24 @@ export default function App() {
   const [photoPreview, setPhotoPreview] = useState("");
   const [cameraActive, setCameraActive] = useState(false);
   const [cameraError, setCameraError] = useState("");
+  const [detectedPills, setDetectedPills] = useState("");
+  const [photoReview, setPhotoReview] = useState({
+    status: "reviewNeeded",
+    message: "No photo has been reviewed yet."
+  });
   const [activity, setActivity] = useState([
     {
       id: 1,
       message: "12:00 PM: Reminder prepared for Lisinopril."
+    }
+  ]);
+  const [caregiverUpdates, setCaregiverUpdates] = useState([
+    {
+      id: 1,
+      time: "12:00 PM",
+      title: "Reminder prepared",
+      detail: "Lisinopril reminder is due today at 12:30 PM.",
+      photo: ""
     }
   ]);
   const [liveMessage, setLiveMessage] = useState("");
@@ -195,15 +282,36 @@ export default function App() {
     );
   }, [schedule]);
 
+  const sortedSchedule = useMemo(() => {
+    return [...schedule].sort((a, b) =>
+      compareAsc(parseReminderTime(a.time), parseReminderTime(b.time))
+    );
+  }, [schedule]);
+
   useEffect(() => {
     return () => stopCamera();
   }, []);
 
   function addActivity(message) {
     setActivity((items) =>
-      [{ id: crypto.randomUUID(), message }, ...items].slice(0, 6)
+      [{ id: makeId(), message }, ...items].slice(0, 6)
     );
     setLiveMessage(message);
+  }
+
+  function addCaregiverUpdate(title, detail, photo = "") {
+    setCaregiverUpdates((items) =>
+      [
+        {
+          id: makeId(),
+          time: format(new Date(), "h:mm a"),
+          title,
+          detail,
+          photo
+        },
+        ...items
+      ].slice(0, 10)
+    );
   }
 
   function updateForm(field, value) {
@@ -213,29 +321,72 @@ export default function App() {
     }));
   }
 
+  function updateTimeRow(id, field, value) {
+    setForm((current) => ({
+      ...current,
+      times: current.times.map((item) =>
+        item.id === id ? { ...item, [field]: value } : item
+      )
+    }));
+  }
+
+  function addTimeRow() {
+    setForm((current) => ({
+      ...current,
+      times: [
+        ...current.times,
+        {
+          id: Date.now(),
+          time: "09:00",
+          dose: "",
+          pillCount: "1",
+          instructions: "",
+          status: "upcoming"
+        }
+      ]
+    }));
+  }
+
+  function removeTimeRow(id) {
+    setForm((current) => ({
+      ...current,
+      times:
+        current.times.length === 1
+          ? current.times
+          : current.times.filter((item) => item.id !== id)
+    }));
+  }
+
   function addReminder(event) {
     event.preventDefault();
 
-    const reminder = {
-      id: Date.now(),
-      name: form.name.trim(),
-      dose: form.dose.trim(),
-      time: form.time,
-      instructions: form.instructions.trim() || "No special instructions",
-      status: form.status,
+    const medicationName = form.name.trim();
+    const reminders = form.times.map((item) => ({
+      id: makeId(),
+      name: medicationName,
+      dose: item.dose.trim(),
+      time: item.time,
+      pillCount: Number(item.pillCount) || 1,
+      instructions: item.instructions.trim() || "No special instructions",
+      status: item.status,
       pillsLeft: Number(form.pillsLeft) || 0
-    };
+    }));
 
-    if (!reminder.name || !reminder.dose || !reminder.time) {
-      addActivity("Medication name, dosage, and time are required.");
+    if (
+      !medicationName ||
+      reminders.some((item) => !item.dose || !item.time || item.pillCount < 1)
+    ) {
+      addActivity("Medication name, dosage, time, and expected pill count are required.");
       return;
     }
 
     setSchedule((items) =>
-      [...items, reminder].sort((a, b) => a.time.localeCompare(b.time))
+      [...items, ...reminders].sort((a, b) =>
+        compareAsc(parseReminderTime(a.time), parseReminderTime(b.time))
+      )
     );
     setForm(emptyReminder);
-    addActivity(`${formatTime(reminder.time)}: ${reminder.name} ${t.reminderAdded}`);
+    addActivity(`${medicationName}: ${reminders.length} ${t.reminderAdded}`);
   }
 
   function deleteReminder(id) {
@@ -283,6 +434,13 @@ export default function App() {
       )
     );
     addActivity(`${formatTime(currentDose.time)}: ${currentDose.name} ${t.taken}.`);
+    addCaregiverUpdate(
+      "Medication taken",
+      `${currentDose.name} ${currentDose.dose} was marked taken at ${formatTime(
+        currentDose.time
+      )}.`,
+      photoPreview
+    );
   }
 
   async function openCamera() {
@@ -334,9 +492,24 @@ export default function App() {
     canvas.width = video.videoWidth || 640;
     canvas.height = video.videoHeight || 480;
     canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
-    setPhotoPreview(canvas.toDataURL("image/png"));
+    const photo = canvas.toDataURL("image/png");
+    setPhotoPreview(photo);
+    setPhotoReview({
+      status: "reviewNeeded",
+      message: t.reviewNeeded
+    });
+    setDetectedPills("");
     stopCamera();
     addActivity(`${currentDose ? formatTime(currentDose.time) : ""}: ${t.photoReady}`);
+    addCaregiverUpdate(
+      "Medication photo uploaded",
+      currentDose
+        ? `${currentDose.name} photo was added for the ${formatTime(
+            currentDose.time
+          )} reminder.`
+        : "Medication confirmation photo was added.",
+      photo
+    );
   }
 
   function handlePhotoChange(event) {
@@ -346,8 +519,70 @@ export default function App() {
       return;
     }
 
-    setPhotoPreview(URL.createObjectURL(file));
+    const photo = URL.createObjectURL(file);
+    setPhotoPreview(photo);
+    setPhotoReview({
+      status: "reviewNeeded",
+      message: t.reviewNeeded
+    });
+    setDetectedPills("");
     addActivity(`${currentDose ? formatTime(currentDose.time) : ""}: ${t.photoReady}`);
+    addCaregiverUpdate(
+      "Medication photo uploaded",
+      currentDose
+        ? `${currentDose.name} photo was added for the ${formatTime(
+            currentDose.time
+          )} reminder.`
+        : "Medication confirmation photo was added.",
+      photo
+    );
+  }
+
+  function reviewPhoto(count = detectedPills) {
+    if (!currentDose || !photoPreview) {
+      return;
+    }
+
+    const detected = Number(count);
+    const expected = Number(currentDose.pillCount) || 1;
+    const matches = detected === expected;
+    const message = matches ? t.reviewMatch : t.reviewMismatch;
+
+    setDetectedPills(String(count));
+    setPhotoReview({
+      status: matches ? "reviewMatch" : "reviewMismatch",
+      message
+    });
+    addActivity(matches ? `${currentDose.name}: ${message}.` : `${currentDose.name}: ${t.mismatch}`);
+    addCaregiverUpdate(
+      matches ? "Photo review matched" : "Photo review needs attention",
+      matches
+        ? `${currentDose.name} photo review matched ${expected} expected pill(s).`
+        : `${currentDose.name} photo review detected ${detected || 0} pill(s), expected ${expected}.`,
+      photoPreview
+    );
+  }
+
+  function simulateDetection() {
+    if (!currentDose) {
+      return;
+    }
+
+    reviewPhoto(currentDose.pillCount || 1);
+  }
+
+  function approvePhotoDose() {
+    if (!currentDose || photoReview.status !== "reviewMatch") {
+      return;
+    }
+
+    confirmDose();
+    addActivity(`${currentDose.name}: ${t.approved}`);
+    addCaregiverUpdate(
+      "Dose approved",
+      `${currentDose.name} was approved after photo review.`,
+      photoPreview
+    );
   }
 
   function requestRefill() {
@@ -356,10 +591,19 @@ export default function App() {
     }
 
     addActivity(`${currentDose.name}: ${t.refillSent}`);
+    addCaregiverUpdate(
+      "Refill requested",
+      `${currentDose.name} refill request was sent. ${currentDose.pillsLeft} ${t.pillsLeft}.`
+    );
   }
 
   function notifyCaregiver() {
     addActivity(`Caregiver: ${t.caregiverSent}`);
+    addCaregiverUpdate(
+      "Caregiver notified",
+      "A manual caregiver notification was sent from Everyday Helper.",
+      photoPreview
+    );
   }
 
   const rootClass = [
@@ -381,6 +625,9 @@ export default function App() {
           <p className="eyebrow">{t.className}</p>
           <h1 id="page-title">{t.appName}</h1>
           <p className="intro">{t.intro}</p>
+          <div className="date-strip">
+            <span>{t.today}: {format(today, "EEEE, MMMM d, yyyy")}</span>
+          </div>
         </div>
 
         <div className={alertModes.visual ? "visual-alert active" : "visual-alert"}>
@@ -412,6 +659,24 @@ export default function App() {
         <Toggle checked label={t.screenReader} disabled />
       </section>
 
+      <nav className="tab-bar" aria-label="Everyday Helper views">
+        <button
+          type="button"
+          className={activeTab === "medication" ? "tab-button active" : "tab-button"}
+          onClick={() => setActiveTab("medication")}
+        >
+          {t.userTab}
+        </button>
+        <button
+          type="button"
+          className={activeTab === "caregiver" ? "tab-button active" : "tab-button"}
+          onClick={() => setActiveTab("caregiver")}
+        >
+          {t.caregiverTab}
+        </button>
+      </nav>
+
+      {activeTab === "medication" && (
       <div className="dashboard-grid">
         <section className="dose-card primary-card" aria-labelledby="current-dose">
           <div className="section-heading">
@@ -424,6 +689,9 @@ export default function App() {
               <span>{formatTime(currentDose.time)}</span>
               <strong>{currentDose.dose}</strong>
               <p>{currentDose.instructions}</p>
+              <small>
+                {t.expectedPills}: {currentDose.pillCount || 1}
+              </small>
             </div>
           ) : (
             <p className="empty-state">Add a prescription reminder to get started.</p>
@@ -487,6 +755,83 @@ export default function App() {
               <div className="photo-placeholder">{t.noPhoto}</div>
             )}
           </div>
+
+          <div className={`photo-review ${photoReview.status}`}>
+            <div className="section-heading">
+              <p className="eyebrow">{t.photoReview}</p>
+              <h2>{photoReview.message}</h2>
+            </div>
+            <p className="supporting-text">{t.reviewHelp}</p>
+
+            <div className="review-grid">
+              <div className="review-stat">
+                <span>{t.expectedPills}</span>
+                <strong>{currentDose?.pillCount || 1}</strong>
+              </div>
+
+              <label>
+                <span>{t.detectedPills}</span>
+                <input
+                  type="number"
+                  min="0"
+                  value={detectedPills}
+                  onChange={(event) => setDetectedPills(event.target.value)}
+                />
+              </label>
+            </div>
+
+            <div className="review-actions">
+              <button type="button" className="secondary-button" onClick={() => reviewPhoto()}>
+                {t.runReview}
+              </button>
+              <button type="button" className="ghost-button" onClick={simulateDetection}>
+                {t.simulation}
+              </button>
+              <button
+                type="button"
+                className="action-button good"
+                disabled={photoReview.status !== "reviewMatch"}
+                onClick={approvePhotoDose}
+              >
+                <span aria-hidden="true">C</span>
+                {t.approveDose}
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <section className="dose-card schedule-card" aria-labelledby="schedule-title">
+          <div className="section-heading">
+            <p className="eyebrow">{t.schedule}</p>
+            <h2 id="schedule-title">Large-print doses</h2>
+          </div>
+
+          <div className="schedule-list">
+            {sortedSchedule.map((item) => (
+              <article className="schedule-item" key={item.id}>
+                <div>
+                  <time dateTime={item.time}>{formatTime(item.time)}</time>
+                  <h3>{item.name}</h3>
+                  <p>
+                    {item.dose} - {item.instructions} - {t.expectedPills}:{" "}
+                    {item.pillCount || 1}
+                  </p>
+                </div>
+                <div className="schedule-actions">
+                  <span className={`status-pill ${statusClass[item.status]}`}>
+                    {t[item.status]}
+                  </span>
+                  <button
+                    type="button"
+                    className="delete-button"
+                    onClick={() => deleteReminder(item.id)}
+                  >
+                    {t.deleteReminder}
+                  </button>
+                </div>
+              </article>
+            ))}
+          </div>
         </section>
 
         <section className="dose-card form-card" aria-labelledby="add-title">
@@ -506,24 +851,6 @@ export default function App() {
             </label>
 
             <label>
-              <span>{t.dosage}</span>
-              <input
-                value={form.dose}
-                onChange={(event) => updateForm("dose", event.target.value)}
-                placeholder="Example: 1000 IU"
-              />
-            </label>
-
-            <label>
-              <span>{t.time}</span>
-              <input
-                type="time"
-                value={form.time}
-                onChange={(event) => updateForm("time", event.target.value)}
-              />
-            </label>
-
-            <label>
               <span>{t.quantity}</span>
               <input
                 type="number"
@@ -533,27 +860,89 @@ export default function App() {
               />
             </label>
 
-            <label>
-              <span>{t.status}</span>
-              <select
-                value={form.status}
-                onChange={(event) => updateForm("status", event.target.value)}
-              >
-                <option value="upcoming">{t.upcoming}</option>
-                <option value="dueNow">{t.dueNow}</option>
-                <option value="taken">{t.taken}</option>
-                <option value="missed">{t.missed}</option>
-              </select>
-            </label>
+            <div className="time-builder wide-field">
+              <div className="time-builder-header">
+                <h3>{t.times}</h3>
+                <button type="button" className="text-button" onClick={addTimeRow}>
+                  {t.addAnotherTime}
+                </button>
+              </div>
 
-            <label className="wide-field">
-              <span>{t.instructions}</span>
-              <input
-                value={form.instructions}
-                onChange={(event) => updateForm("instructions", event.target.value)}
-                placeholder="Example: Take with food"
-              />
-            </label>
+              {form.times.map((item, index) => (
+                <fieldset className="time-row" key={item.id}>
+                  <legend>Reminder {index + 1}</legend>
+
+                  <label>
+                    <span>{t.time}</span>
+                    <input
+                      type="time"
+                      value={item.time}
+                      onChange={(event) =>
+                        updateTimeRow(item.id, "time", event.target.value)
+                      }
+                    />
+                  </label>
+
+                  <label>
+                    <span>{t.dosage}</span>
+                    <input
+                      value={item.dose}
+                      onChange={(event) =>
+                        updateTimeRow(item.id, "dose", event.target.value)
+                      }
+                      placeholder="Example: 1000 IU"
+                    />
+                  </label>
+
+                  <label>
+                    <span>{t.pillCount}</span>
+                    <input
+                      type="number"
+                      min="1"
+                      value={item.pillCount}
+                      onChange={(event) =>
+                        updateTimeRow(item.id, "pillCount", event.target.value)
+                      }
+                    />
+                  </label>
+
+                  <label>
+                    <span>{t.status}</span>
+                    <select
+                      value={item.status}
+                      onChange={(event) =>
+                        updateTimeRow(item.id, "status", event.target.value)
+                      }
+                    >
+                      <option value="upcoming">{t.upcoming}</option>
+                      <option value="dueNow">{t.dueNow}</option>
+                      <option value="taken">{t.taken}</option>
+                      <option value="missed">{t.missed}</option>
+                    </select>
+                  </label>
+
+                  <label className="wide-field">
+                    <span>{t.instructions}</span>
+                    <input
+                      value={item.instructions}
+                      onChange={(event) =>
+                        updateTimeRow(item.id, "instructions", event.target.value)
+                      }
+                      placeholder="Example: Take with food"
+                    />
+                  </label>
+
+                  <button
+                    type="button"
+                    className="delete-button wide-field"
+                    onClick={() => removeTimeRow(item.id)}
+                    disabled={form.times.length === 1}
+                  >
+                    {t.removeTime}
+                  </button>
+                </fieldset>
+              ))}
+            </div>
 
             <button type="submit" className="secondary-button form-submit">
               {t.saveReminder}
@@ -583,39 +972,6 @@ export default function App() {
               label={t.vibration}
               onChange={() => toggleAlertMode("vibration")}
             />
-          </div>
-        </section>
-
-        <section className="dose-card schedule-card" aria-labelledby="schedule-title">
-          <div className="section-heading">
-            <p className="eyebrow">{t.schedule}</p>
-            <h2 id="schedule-title">Large-print doses</h2>
-          </div>
-
-          <div className="schedule-list">
-            {schedule.map((item) => (
-              <article className="schedule-item" key={item.id}>
-                <div>
-                  <time>{formatTime(item.time)}</time>
-                  <h3>{item.name}</h3>
-                  <p>
-                    {item.dose} - {item.instructions}
-                  </p>
-                </div>
-                <div className="schedule-actions">
-                  <span className={`status-pill ${statusClass[item.status]}`}>
-                    {t[item.status]}
-                  </span>
-                  <button
-                    type="button"
-                    className="delete-button"
-                    onClick={() => deleteReminder(item.id)}
-                  >
-                    {t.deleteReminder}
-                  </button>
-                </div>
-              </article>
-            ))}
           </div>
         </section>
 
@@ -672,6 +1028,92 @@ export default function App() {
           </ul>
         </section>
       </div>
+      )}
+
+      {activeTab === "caregiver" && (
+        <div className="dashboard-grid caregiver-grid">
+          <section className="dose-card primary-card" aria-labelledby="caregiver-dashboard">
+            <div className="section-heading">
+              <p className="eyebrow">{t.caregiverTab}</p>
+              <h2 id="caregiver-dashboard">{t.caregiverDashboard}</h2>
+            </div>
+            <p className="supporting-text">{t.caregiverIntro}</p>
+
+            <div className="caregiver-summary">
+              <div>
+                <span>{t.taken}</span>
+                <strong>{schedule.filter((item) => item.status === "taken").length}</strong>
+              </div>
+              <div>
+                <span>{t.dueNow}</span>
+                <strong>{schedule.filter((item) => item.status === "dueNow").length}</strong>
+              </div>
+              <div>
+                <span>{t.missed}</span>
+                <strong>{schedule.filter((item) => item.status === "missed").length}</strong>
+              </div>
+            </div>
+          </section>
+
+          <section className="dose-card activity-card" aria-labelledby="care-log-title">
+            <div className="section-heading">
+              <p className="eyebrow">{t.careLog}</p>
+              <h2 id="care-log-title">Latest user updates</h2>
+            </div>
+
+            {caregiverUpdates.length === 0 ? (
+              <p className="empty-state">{t.noCareUpdates}</p>
+            ) : (
+              <div className="care-log">
+                {caregiverUpdates.map((item) => (
+                  <article className="care-log-item" key={item.id}>
+                    <div>
+                      <time>{item.time}</time>
+                      <h3>{item.title}</h3>
+                      <p>{item.detail}</p>
+                    </div>
+
+                    <div className="care-photo">
+                      {item.photo ? (
+                        <img src={item.photo} alt={`${item.title} ${t.photoEvidence}`} />
+                      ) : (
+                        <span>{t.noPhotoAttached}</span>
+                      )}
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
+          </section>
+
+          <section className="dose-card schedule-card" aria-labelledby="care-schedule-title">
+            <div className="section-heading">
+              <p className="eyebrow">{t.scheduleSnapshot}</p>
+              <h2 id="care-schedule-title">{t.schedule}</h2>
+            </div>
+
+            <div className="schedule-list">
+              {sortedSchedule.map((item) => (
+                <article className="schedule-item" key={item.id}>
+                  <div>
+                    <time dateTime={item.time}>{formatTime(item.time)}</time>
+                    <h3>{item.name}</h3>
+                    <p>
+                      {item.dose} - {item.instructions} - {t.expectedPills}:{" "}
+                      {item.pillCount || 1}
+                    </p>
+                  </div>
+                  <div className="schedule-actions">
+                    <span className={`status-pill ${statusClass[item.status]}`}>
+                      {t[item.status]}
+                    </span>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
+        </div>
+      )}
     </main>
   );
 }

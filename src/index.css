@@ -133,12 +133,34 @@ h1 {
   font-size: 23px;
 }
 
+.date-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.date-strip span {
+  padding: 10px 14px;
+  border: 2px solid #9bc7b5;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #0f766e;
+  font-weight: 900;
+}
+
 .high-contrast .intro,
 .high-contrast .supporting-text,
 .high-contrast .schedule-item p,
 .high-contrast .dose-detail p,
 .high-contrast .empty-state {
   color: #e2e8f0;
+}
+
+.high-contrast .date-strip span {
+  background: #020617;
+  color: #f8fafc;
+  border-color: #f8fafc;
 }
 
 .visual-alert {
@@ -204,6 +226,34 @@ h1 {
   font-weight: 800;
 }
 
+.tab-bar {
+  width: min(100%, 1180px);
+  display: flex;
+  gap: 10px;
+  margin: 18px auto 0;
+  padding: 8px;
+  border: 1px solid rgba(100, 75, 58, 0.12);
+  border-radius: 8px;
+  background: rgba(255, 253, 249, 0.94);
+  box-shadow: 0 12px 28px rgba(92, 64, 51, 0.08);
+}
+
+.tab-button {
+  flex: 1;
+  min-height: 58px;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: #5c6675;
+  font-weight: 900;
+}
+
+.tab-button.active {
+  border-color: #0f766e;
+  background: #f0faf5;
+  color: #0f766e;
+}
+
 input,
 select {
   min-height: 48px;
@@ -221,6 +271,10 @@ select {
   grid-template-columns: minmax(0, 1.12fr) minmax(320px, 0.88fr);
   gap: 18px;
   margin: 18px auto 0;
+}
+
+.caregiver-grid {
+  grid-template-columns: 1fr;
 }
 
 .dose-card {
@@ -250,7 +304,7 @@ select {
 
 .dose-detail {
   display: grid;
-  grid-template-columns: 180px minmax(160px, 1fr) 2fr;
+  grid-template-columns: 180px minmax(160px, 1fr) 2fr auto;
   gap: 14px;
   align-items: center;
   margin-bottom: 20px;
@@ -285,6 +339,16 @@ select {
   font-weight: 700;
 }
 
+.dose-detail small {
+  padding: 10px 12px;
+  border-radius: 999px;
+  background: #fff8f2;
+  color: #7a4c24;
+  font-size: 18px;
+  font-weight: 900;
+  text-align: center;
+}
+
 .action-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -298,6 +362,11 @@ select {
   min-height: 62px;
   border-radius: 8px;
   font-weight: 900;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 
 .action-button,
@@ -406,6 +475,71 @@ select {
   background: #ffffff;
 }
 
+.photo-review {
+  display: grid;
+  gap: 16px;
+  margin-top: 18px;
+  padding: 18px;
+  border: 2px solid #d7c7bb;
+  border-radius: 8px;
+  background: #fffaf4;
+}
+
+.photo-review.reviewMatch {
+  border-color: #0f766e;
+  background: #f0faf5;
+}
+
+.photo-review.reviewMismatch {
+  border-color: #d14d72;
+  background: #fff1f3;
+}
+
+.photo-review .section-heading {
+  margin-bottom: 0;
+}
+
+.review-grid,
+.review-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  align-items: end;
+}
+
+.review-grid {
+  grid-template-columns: 180px minmax(180px, 1fr);
+}
+
+.review-grid label {
+  display: grid;
+  gap: 6px;
+  font-weight: 800;
+}
+
+.review-stat {
+  min-height: 78px;
+  display: grid;
+  align-content: center;
+  gap: 2px;
+  padding: 12px;
+  border: 2px solid #9bc7b5;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.review-stat span {
+  color: #5c6675;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.review-stat strong {
+  color: #0f766e;
+  font-size: 34px;
+  line-height: 1;
+}
+
 .photo-confirmation img {
   width: 100%;
   height: 300px;
@@ -427,6 +561,45 @@ select {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 14px;
+}
+
+.time-builder {
+  display: grid;
+  gap: 12px;
+}
+
+.time-builder-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.time-builder-header h3 {
+  margin: 0;
+  font-size: 24px;
+}
+
+.time-builder-header .text-button {
+  margin-top: 0;
+}
+
+.time-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 16px;
+  border: 2px solid #eaded4;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.time-row legend {
+  padding: 0 8px;
+  color: #0f766e;
+  font-weight: 900;
 }
 
 .reminder-form label {
@@ -463,6 +636,14 @@ select {
 .high-contrast .toggle,
 .high-contrast .photo-placeholder,
 .high-contrast .photo-confirmation,
+.high-contrast .photo-review,
+.high-contrast .review-stat,
+.high-contrast .time-row,
+.high-contrast .tab-bar,
+.high-contrast .tab-button.active,
+.high-contrast .caregiver-summary div,
+.high-contrast .care-log-item,
+.high-contrast .care-photo,
 .high-contrast input,
 .high-contrast select,
 .high-contrast .ghost-button,
@@ -608,6 +789,85 @@ select {
   padding-left: 6px;
 }
 
+.caregiver-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.caregiver-summary div {
+  padding: 18px;
+  border: 2px solid #9bc7b5;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.caregiver-summary span {
+  display: block;
+  color: #5c6675;
+  font-size: 16px;
+  font-weight: 900;
+}
+
+.caregiver-summary strong {
+  display: block;
+  color: #0f766e;
+  font-size: 44px;
+  line-height: 1;
+}
+
+.care-log {
+  display: grid;
+  gap: 14px;
+}
+
+.care-log-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 180px;
+  gap: 16px;
+  align-items: stretch;
+  padding: 16px;
+  border: 2px solid #eaded4;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.care-log-item time {
+  color: #0f766e;
+  font-weight: 900;
+}
+
+.care-log-item h3 {
+  margin: 4px 0 8px;
+  font-size: 24px;
+}
+
+.care-log-item p {
+  margin: 0;
+  color: #5c6675;
+}
+
+.care-photo {
+  min-height: 130px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border: 2px dashed #b7a99d;
+  border-radius: 8px;
+  background: #fff8f2;
+  color: #6b7280;
+  font-weight: 900;
+  text-align: center;
+}
+
+.care-photo img {
+  width: 100%;
+  height: 100%;
+  min-height: 130px;
+  object-fit: cover;
+}
+
 @keyframes pulse-alert {
   0%,
   100% {
@@ -638,8 +898,17 @@ select {
   .dose-detail,
   .action-grid,
   .reminder-form,
-  .camera-actions {
+  .review-grid,
+  .review-actions,
+  .time-row,
+  .camera-actions,
+  .caregiver-summary,
+  .care-log-item {
     grid-template-columns: 1fr;
+  }
+
+  .tab-bar {
+    flex-direction: column;
   }
 
   .hero-panel {
