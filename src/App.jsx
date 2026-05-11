@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { compareAsc, format, parse } from "date-fns";
+import { GEMINI_API_KEY, GEMINI_MODEL } from "./geminiConfig";
 
 const copy = {
   en: {
     appName: "Everyday Helper",
     className: "Accessibility and Assistive Technology",
     intro:
-      "A calm, large-print medication helper with custom schedules, camera review, caregiver updates, and refill support.",
+      "A calm, large-print medication helper with custom schedules, photo confirmation, caregiver updates, and refill support.",
     language: "Language",
     alertModes: "Alert modes",
     visual: "Visual",
@@ -55,23 +56,50 @@ const copy = {
     cameraUnavailable: "Camera could not start. Use photo upload instead.",
     reminderAdded: "Prescription reminder added.",
     reminderDeleted: "Prescription reminder deleted.",
-    photoReview: "Photo review",
     expectedPills: "Expected pills",
-    detectedPills: "Detected pills",
-    runReview: "Review photo",
-    approveDose: "Approve dose",
-    reviewNeeded: "Needs photo review",
-    reviewMatch: "Matches expected dose",
-    reviewMismatch: "Dose mismatch",
-    reviewHelp:
-      "For this prototype, enter the detected pill count after looking at the image. A real version would connect this step to a vision model.",
-    simulation: "Simulate detection",
-    approved: "Dose approved from photo review.",
-    mismatch:
-      "Detected count does not match the expected dose. Caregiver review recommended.",
     today: "Today",
     userTab: "Medication",
+    dailyTab: "Daily Life",
+    cookingTab: "Cooking",
     caregiverTab: "Caregiver",
+    dailyTitle: "Daily Life Reminders",
+    dailyIntro:
+      "Create accessible reminders for appointments, laundry, plants, pets, household tasks, hydration, self-care, or anything else in daily life.",
+    dailyCategories: "Reminder categories",
+    dailyList: "Today daily reminders",
+    addDailyReminder: "Add daily reminder",
+    reminderTitle: "Reminder title",
+    category: "Category",
+    repeat: "Repeat",
+    notes: "Notes",
+    saveDailyReminder: "Save daily reminder",
+    complete: "Complete",
+    reopen: "Reopen",
+    noDailyReminders: "No daily reminders yet.",
+    dailyAdded: "Daily reminder added.",
+    dailyDeleted: "Daily reminder deleted.",
+    cookingTitle: "Accessible Cooking Assistant",
+    cookingIntro:
+      "AI-powered cooking support for simplified recipes, step-by-step guidance, timers, voice controls, safety alerts, and visual food identification.",
+    recipeInput: "Recipe, ingredients, or cooking goal",
+    simplifyRecipe: "Simplify with Gemini",
+    makeSteps: "Make step guide",
+    identifyFood: "Identify food image",
+    uploadFoodPhoto: "Upload food photo",
+    cookingTimer: "Cooking timer",
+    minutes: "Minutes",
+    startTimer: "Start timer",
+    stopTimer: "Stop timer",
+    nextStep: "Next step",
+    previousStep: "Previous step",
+    readStep: "Read step aloud",
+    voiceControl: "Voice control",
+    startListening: "Start listening",
+    aiOutput: "AI cooking guidance",
+    keyMissing:
+      "Gemini key missing. Paste your key in src/geminiConfig.js to enable AI features.",
+    aiError: "Gemini request failed. Check your key and network connection.",
+    loading: "Asking Gemini...",
     caregiverDashboard: "Caregiver updates",
     caregiverIntro:
       "Medication status, confirmation photos, refill notices, and the full reminder schedule for the person you support.",
@@ -85,7 +113,7 @@ const copy = {
     appName: "Everyday Helper",
     className: "Accesibilidad y Tecnologia de Asistencia",
     intro:
-      "Ayuda tranquila con letra grande, horarios personalizados, camara, cuidador y recargas.",
+      "Ayuda tranquila con letra grande, horarios personalizados, foto de confirmacion, cuidador y recargas.",
     language: "Idioma",
     alertModes: "Tipos de alerta",
     visual: "Visual",
@@ -134,23 +162,50 @@ const copy = {
     cameraUnavailable: "No se pudo abrir la camara. Use subir foto.",
     reminderAdded: "Recordatorio agregado.",
     reminderDeleted: "Recordatorio eliminado.",
-    photoReview: "Revision de foto",
     expectedPills: "Pastillas esperadas",
-    detectedPills: "Pastillas detectadas",
-    runReview: "Revisar foto",
-    approveDose: "Aprobar dosis",
-    reviewNeeded: "Necesita revision",
-    reviewMatch: "Coincide con la dosis",
-    reviewMismatch: "Dosis no coincide",
-    reviewHelp:
-      "Para este prototipo, ingrese el numero detectado despues de mirar la imagen. Una version real usaria un modelo de vision.",
-    simulation: "Simular deteccion",
-    approved: "Dosis aprobada por revision de foto.",
-    mismatch:
-      "El numero detectado no coincide con la dosis esperada. Se recomienda revisar con cuidador.",
     today: "Hoy",
     userTab: "Medicamentos",
+    dailyTab: "Vida diaria",
+    cookingTab: "Cocina",
     caregiverTab: "Cuidador",
+    dailyTitle: "Recordatorios de Vida Diaria",
+    dailyIntro:
+      "Cree recordatorios accesibles para citas, lavanderia, plantas, mascotas, tareas del hogar, hidratacion, cuidado personal o cualquier rutina diaria.",
+    dailyCategories: "Categorias",
+    dailyList: "Recordatorios de hoy",
+    addDailyReminder: "Agregar recordatorio diario",
+    reminderTitle: "Titulo del recordatorio",
+    category: "Categoria",
+    repeat: "Repetir",
+    notes: "Notas",
+    saveDailyReminder: "Guardar recordatorio",
+    complete: "Completar",
+    reopen: "Reabrir",
+    noDailyReminders: "Aun no hay recordatorios diarios.",
+    dailyAdded: "Recordatorio diario agregado.",
+    dailyDeleted: "Recordatorio diario eliminado.",
+    cookingTitle: "Asistente de Cocina Accesible",
+    cookingIntro:
+      "Ayuda de cocina con IA para recetas simples, pasos guiados, temporizadores, voz, alertas de seguridad e identificacion visual.",
+    recipeInput: "Receta, ingredientes u objetivo",
+    simplifyRecipe: "Simplificar con Gemini",
+    makeSteps: "Crear pasos",
+    identifyFood: "Identificar comida",
+    uploadFoodPhoto: "Subir foto de comida",
+    cookingTimer: "Temporizador",
+    minutes: "Minutos",
+    startTimer: "Iniciar",
+    stopTimer: "Detener",
+    nextStep: "Siguiente paso",
+    previousStep: "Paso anterior",
+    readStep: "Leer paso",
+    voiceControl: "Control por voz",
+    startListening: "Escuchar",
+    aiOutput: "Guia de cocina con IA",
+    keyMissing:
+      "Falta la clave de Gemini. Pegue su clave en src/geminiConfig.js.",
+    aiError: "La solicitud a Gemini fallo. Revise su clave y conexion.",
+    loading: "Consultando Gemini...",
     caregiverDashboard: "Actualizaciones para cuidador",
     caregiverIntro:
       "Estado de medicamentos, fotos de confirmacion, avisos de recarga y el horario completo.",
@@ -195,6 +250,149 @@ const initialSchedule = [
   }
 ];
 
+const dailyCategories = [
+  {
+    id: "appointments",
+    icon: "📅",
+    title: "Appointments",
+    tone: "teal",
+    examples: [
+      "Doctor, therapy, dentist alerts",
+      "Transit directions with accessible routes",
+      "Prep reminders for forms or fasting"
+    ]
+  },
+  {
+    id: "laundry",
+    icon: "🧺",
+    title: "Laundry",
+    tone: "indigo",
+    examples: [
+      "Wash, dry, fold step notifications",
+      "Timer with large countdown display",
+      "Fabric care visual guides"
+    ]
+  },
+  {
+    id: "plants",
+    icon: "🌿",
+    title: "Plant Watering",
+    tone: "green",
+    examples: [
+      "Plant-specific watering schedules",
+      "Photo notes for each plant",
+      "Seasonal care adjustments"
+    ]
+  },
+  {
+    id: "pets",
+    icon: "🐾",
+    title: "Pet Feeding",
+    tone: "orange",
+    examples: [
+      "Feeding and medication reminders",
+      "Vet appointment tracking",
+      "Weight and health logging"
+    ]
+  },
+  {
+    id: "household",
+    icon: "🏠",
+    title: "Household Tasks",
+    tone: "pink",
+    examples: [
+      "Cleaning schedule with visual checklists",
+      "Garbage day alerts",
+      "Bill payment reminders"
+    ]
+  },
+  {
+    id: "self-care",
+    icon: "💧",
+    title: "Hydration & Self-Care",
+    tone: "blue",
+    examples: [
+      "Drink water reminders",
+      "Skincare and hygiene routines",
+      "Sleep schedule prompts"
+    ]
+  }
+];
+
+const initialDailyReminders = [
+  {
+    id: 1,
+    title: "Drink water",
+    category: "self-care",
+    time: "10:00",
+    repeat: "Daily",
+    notes: "Use the large blue bottle.",
+    completed: false
+  },
+  {
+    id: 2,
+    title: "Move laundry to dryer",
+    category: "laundry",
+    time: "14:30",
+    repeat: "Today",
+    notes: "Check delicate cycle first.",
+    completed: false
+  }
+];
+
+const emptyDailyReminder = {
+  title: "",
+  category: "appointments",
+  time: "09:00",
+  repeat: "Daily",
+  notes: ""
+};
+
+const cookingFeatures = [
+  {
+    icon: "📖",
+    title: "Step-by-Step Guidance",
+    tone: "green",
+    text:
+      "One instruction at a time with large fonts, high contrast, and audio narration."
+  },
+  {
+    icon: "⏱️",
+    title: "Timers & Alerts",
+    tone: "teal",
+    text:
+      "Automatic cooking timers with visual countdowns, sound alerts, and phone vibration."
+  },
+  {
+    icon: "🥦",
+    title: "Recipe Simplification",
+    tone: "purple",
+    text:
+      "Gemini breaks complex recipes into accessible steps, substitutions, and safety notes."
+  },
+  {
+    icon: "🗣️",
+    title: "Voice Control",
+    tone: "orange",
+    text:
+      "Hands-free commands such as next, back, and repeat for users holding utensils."
+  },
+  {
+    icon: "🌡️",
+    title: "Safety Alerts",
+    tone: "pink",
+    text:
+      "Stove-on reminders, temperature warnings, and caregiver-friendly safety prompts."
+  },
+  {
+    icon: "📷",
+    title: "Visual Food Identification",
+    tone: "blue",
+    text:
+      "Upload a food photo so Gemini can describe visible ingredients or labels."
+  }
+];
+
 const emptyReminder = {
   name: "",
   pillsLeft: "30",
@@ -235,6 +433,23 @@ export default function App() {
   const [activeTab, setActiveTab] = useState("medication");
   const [schedule, setSchedule] = useState(initialSchedule);
   const [form, setForm] = useState(emptyReminder);
+  const [dailyReminders, setDailyReminders] = useState(initialDailyReminders);
+  const [dailyForm, setDailyForm] = useState(emptyDailyReminder);
+  const [recipeInput, setRecipeInput] = useState(
+    "I have eggs, spinach, bread, and cheese. Make a simple breakfast."
+  );
+  const [cookingOutput, setCookingOutput] = useState(
+    "Gemini guidance will appear here after you paste your key and ask for help."
+  );
+  const [cookingSteps, setCookingSteps] = useState([]);
+  const [currentCookingStep, setCurrentCookingStep] = useState(0);
+  const [cookingImage, setCookingImage] = useState(null);
+  const [cookingImagePreview, setCookingImagePreview] = useState("");
+  const [cookingLoading, setCookingLoading] = useState(false);
+  const [cookingError, setCookingError] = useState("");
+  const [timerMinutes, setTimerMinutes] = useState("5");
+  const [timerSeconds, setTimerSeconds] = useState(0);
+  const [timerRunning, setTimerRunning] = useState(false);
   const [alertModes, setAlertModes] = useState({
     visual: true,
     audio: true,
@@ -245,11 +460,6 @@ export default function App() {
   const [photoPreview, setPhotoPreview] = useState("");
   const [cameraActive, setCameraActive] = useState(false);
   const [cameraError, setCameraError] = useState("");
-  const [detectedPills, setDetectedPills] = useState("");
-  const [photoReview, setPhotoReview] = useState({
-    status: "reviewNeeded",
-    message: "No photo has been reviewed yet."
-  });
   const [activity, setActivity] = useState([
     {
       id: 1,
@@ -271,6 +481,7 @@ export default function App() {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const streamRef = useRef(null);
+  const foodInputRef = useRef(null);
 
   const t = copy[language];
   const currentDose = useMemo(() => {
@@ -288,9 +499,46 @@ export default function App() {
     );
   }, [schedule]);
 
+  const sortedDailyReminders = useMemo(() => {
+    return [...dailyReminders].sort((a, b) =>
+      compareAsc(parseReminderTime(a.time), parseReminderTime(b.time))
+    );
+  }, [dailyReminders]);
+
   useEffect(() => {
     return () => stopCamera();
   }, []);
+
+  useEffect(() => {
+    if (!timerRunning || timerSeconds <= 0) {
+      return undefined;
+    }
+
+    const timer = window.setInterval(() => {
+      setTimerSeconds((seconds) => {
+        if (seconds <= 1) {
+          window.clearInterval(timer);
+          setTimerRunning(false);
+
+          if ("vibrate" in navigator) {
+            navigator.vibrate([240, 120, 240]);
+          }
+
+          if ("speechSynthesis" in window) {
+            window.speechSynthesis.speak(
+              new SpeechSynthesisUtterance("Cooking timer finished.")
+            );
+          }
+
+          return 0;
+        }
+
+        return seconds - 1;
+      });
+    }, 1000);
+
+    return () => window.clearInterval(timer);
+  }, [timerRunning, timerSeconds]);
 
   function addActivity(message) {
     setActivity((items) =>
@@ -319,6 +567,217 @@ export default function App() {
       ...current,
       [field]: value
     }));
+  }
+
+  function updateDailyForm(field, value) {
+    setDailyForm((current) => ({
+      ...current,
+      [field]: value
+    }));
+  }
+
+  function addDailyReminder(event) {
+    event.preventDefault();
+
+    const title = dailyForm.title.trim();
+
+    if (!title || !dailyForm.time) {
+      addActivity("Daily reminder title and time are required.");
+      return;
+    }
+
+    const reminder = {
+      id: makeId(),
+      title,
+      category: dailyForm.category,
+      time: dailyForm.time,
+      repeat: dailyForm.repeat,
+      notes: dailyForm.notes.trim(),
+      completed: false
+    };
+
+    setDailyReminders((items) => [...items, reminder]);
+    setDailyForm(emptyDailyReminder);
+    addActivity(`${formatTime(reminder.time)}: ${title} ${t.dailyAdded}`);
+  }
+
+  function toggleDailyReminder(id) {
+    setDailyReminders((items) =>
+      items.map((item) =>
+        item.id === id ? { ...item, completed: !item.completed } : item
+      )
+    );
+  }
+
+  function deleteDailyReminder(id) {
+    const reminder = dailyReminders.find((item) => item.id === id);
+    setDailyReminders((items) => items.filter((item) => item.id !== id));
+    addActivity(`${reminder?.title || "Daily reminder"} ${t.dailyDeleted}`);
+  }
+
+  async function askGemini(parts) {
+    if (!GEMINI_API_KEY || GEMINI_API_KEY === "PASTE_YOUR_GEMINI_API_KEY_HERE") {
+      throw new Error(t.keyMissing);
+    }
+
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": GEMINI_API_KEY
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              role: "user",
+              parts
+            }
+          ]
+        })
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(t.aiError);
+    }
+
+    const data = await response.json();
+    return (
+      data.candidates?.[0]?.content?.parts
+        ?.map((part) => part.text)
+        .filter(Boolean)
+        .join("\n") || "No Gemini response returned."
+    );
+  }
+
+  async function runCookingPrompt(mode) {
+    setCookingLoading(true);
+    setCookingError("");
+
+    const prompt =
+      mode === "steps"
+        ? `Create an accessible step-by-step cooking guide for this. Use short numbered steps, one action per step, plain language, safety reminders, and timer suggestions when useful:\n\n${recipeInput}`
+        : `Simplify this recipe or cooking goal for an accessibility-focused cooking assistant. Include ingredients, easy substitutions, allergen flags when obvious, safety notes, and simple steps:\n\n${recipeInput}`;
+
+    try {
+      const text = await askGemini([{ text: prompt }]);
+      setCookingOutput(text);
+      const steps = text
+        .split(/\n+/)
+        .map((line) => line.replace(/^\d+[\).]\s*/, "").trim())
+        .filter((line) => line.length > 12)
+        .slice(0, 12);
+      setCookingSteps(steps);
+      setCurrentCookingStep(0);
+    } catch (error) {
+      setCookingError(error.message || t.aiError);
+    } finally {
+      setCookingLoading(false);
+    }
+  }
+
+  function handleFoodImageChange(event) {
+    const file = event.target.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = String(reader.result);
+      const [, base64 = ""] = result.split(",");
+      setCookingImage({
+        mimeType: file.type || "image/jpeg",
+        data: base64
+      });
+      setCookingImagePreview(result);
+    };
+    reader.readAsDataURL(file);
+  }
+
+  async function identifyFoodImage() {
+    if (!cookingImage) {
+      setCookingError("Upload a food photo first.");
+      return;
+    }
+
+    setCookingLoading(true);
+    setCookingError("");
+
+    try {
+      const text = await askGemini([
+        {
+          text:
+            "You are an accessible cooking assistant. Describe the visible food or ingredient labels in this image. Mention possible ingredients, expiry dates if readable, safety concerns, and simple meal ideas. Do not claim certainty if unclear."
+        },
+        {
+          inline_data: {
+            mime_type: cookingImage.mimeType,
+            data: cookingImage.data
+          }
+        }
+      ]);
+      setCookingOutput(text);
+    } catch (error) {
+      setCookingError(error.message || t.aiError);
+    } finally {
+      setCookingLoading(false);
+    }
+  }
+
+  function startCookingTimer() {
+    const minutes = Number(timerMinutes) || 1;
+    setTimerSeconds(Math.max(1, minutes) * 60);
+    setTimerRunning(true);
+  }
+
+  function stopCookingTimer() {
+    setTimerRunning(false);
+    setTimerSeconds(0);
+  }
+
+  function speakCurrentStep() {
+    const step = cookingSteps[currentCookingStep] || cookingOutput;
+
+    if ("speechSynthesis" in window && step) {
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(new SpeechSynthesisUtterance(step));
+    }
+  }
+
+  function moveCookingStep(direction) {
+    setCurrentCookingStep((index) => {
+      const next = index + direction;
+      return Math.min(Math.max(next, 0), Math.max(cookingSteps.length - 1, 0));
+    });
+  }
+
+  function startVoiceCommands() {
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      setCookingError("Voice control is not supported in this browser.");
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = "en-US";
+    recognition.onresult = (event) => {
+      const command = event.results[0][0].transcript.toLowerCase();
+
+      if (command.includes("next")) {
+        moveCookingStep(1);
+      } else if (command.includes("back") || command.includes("previous")) {
+        moveCookingStep(-1);
+      } else if (command.includes("repeat") || command.includes("read")) {
+        speakCurrentStep();
+      }
+    };
+    recognition.start();
   }
 
   function updateTimeRow(id, field, value) {
@@ -494,11 +953,6 @@ export default function App() {
     canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
     const photo = canvas.toDataURL("image/png");
     setPhotoPreview(photo);
-    setPhotoReview({
-      status: "reviewNeeded",
-      message: t.reviewNeeded
-    });
-    setDetectedPills("");
     stopCamera();
     addActivity(`${currentDose ? formatTime(currentDose.time) : ""}: ${t.photoReady}`);
     addCaregiverUpdate(
@@ -521,11 +975,6 @@ export default function App() {
 
     const photo = URL.createObjectURL(file);
     setPhotoPreview(photo);
-    setPhotoReview({
-      status: "reviewNeeded",
-      message: t.reviewNeeded
-    });
-    setDetectedPills("");
     addActivity(`${currentDose ? formatTime(currentDose.time) : ""}: ${t.photoReady}`);
     addCaregiverUpdate(
       "Medication photo uploaded",
@@ -535,53 +984,6 @@ export default function App() {
           )} reminder.`
         : "Medication confirmation photo was added.",
       photo
-    );
-  }
-
-  function reviewPhoto(count = detectedPills) {
-    if (!currentDose || !photoPreview) {
-      return;
-    }
-
-    const detected = Number(count);
-    const expected = Number(currentDose.pillCount) || 1;
-    const matches = detected === expected;
-    const message = matches ? t.reviewMatch : t.reviewMismatch;
-
-    setDetectedPills(String(count));
-    setPhotoReview({
-      status: matches ? "reviewMatch" : "reviewMismatch",
-      message
-    });
-    addActivity(matches ? `${currentDose.name}: ${message}.` : `${currentDose.name}: ${t.mismatch}`);
-    addCaregiverUpdate(
-      matches ? "Photo review matched" : "Photo review needs attention",
-      matches
-        ? `${currentDose.name} photo review matched ${expected} expected pill(s).`
-        : `${currentDose.name} photo review detected ${detected || 0} pill(s), expected ${expected}.`,
-      photoPreview
-    );
-  }
-
-  function simulateDetection() {
-    if (!currentDose) {
-      return;
-    }
-
-    reviewPhoto(currentDose.pillCount || 1);
-  }
-
-  function approvePhotoDose() {
-    if (!currentDose || photoReview.status !== "reviewMatch") {
-      return;
-    }
-
-    confirmDose();
-    addActivity(`${currentDose.name}: ${t.approved}`);
-    addCaregiverUpdate(
-      "Dose approved",
-      `${currentDose.name} was approved after photo review.`,
-      photoPreview
     );
   }
 
@@ -635,7 +1037,21 @@ export default function App() {
             className={activeTab === "medication" ? "tab-button active" : "tab-button"}
             onClick={() => setActiveTab("medication")}
           >
-            {t.userTab}
+          {t.userTab}
+        </button>
+          <button
+            type="button"
+            className={activeTab === "daily" ? "tab-button active" : "tab-button"}
+            onClick={() => setActiveTab("daily")}
+          >
+            {t.dailyTab}
+          </button>
+          <button
+            type="button"
+            className={activeTab === "cooking" ? "tab-button active" : "tab-button"}
+            onClick={() => setActiveTab("cooking")}
+          >
+            {t.cookingTab}
           </button>
           <button
             type="button"
@@ -763,48 +1179,6 @@ export default function App() {
             )}
           </div>
 
-          <div className={`photo-review ${photoReview.status}`}>
-            <div className="section-heading">
-              <p className="eyebrow">{t.photoReview}</p>
-              <h2>{photoReview.message}</h2>
-            </div>
-            <p className="supporting-text">{t.reviewHelp}</p>
-
-            <div className="review-grid">
-              <div className="review-stat">
-                <span>{t.expectedPills}</span>
-                <strong>{currentDose?.pillCount || 1}</strong>
-              </div>
-
-              <label>
-                <span>{t.detectedPills}</span>
-                <input
-                  type="number"
-                  min="0"
-                  value={detectedPills}
-                  onChange={(event) => setDetectedPills(event.target.value)}
-                />
-              </label>
-            </div>
-
-            <div className="review-actions">
-              <button type="button" className="secondary-button" onClick={() => reviewPhoto()}>
-                {t.runReview}
-              </button>
-              <button type="button" className="ghost-button" onClick={simulateDetection}>
-                {t.simulation}
-              </button>
-              <button
-                type="button"
-                className="action-button good"
-                disabled={photoReview.status !== "reviewMatch"}
-                onClick={approvePhotoDose}
-              >
-                <span aria-hidden="true">C</span>
-                {t.approveDose}
-              </button>
-            </div>
-          </div>
         </section>
 
         <section className="dose-card schedule-card" aria-labelledby="schedule-title">
@@ -1036,6 +1410,355 @@ export default function App() {
         </section>
       </div>
       </>
+      )}
+
+      {activeTab === "daily" && (
+        <>
+          <section className="daily-hero" aria-labelledby="daily-title">
+            <div>
+              <p className="eyebrow">{t.dailyTab}</p>
+              <h1 id="daily-title">📅 {t.dailyTitle}</h1>
+              <p className="intro">{t.dailyIntro}</p>
+            </div>
+          </section>
+
+          <div className="daily-grid">
+            <section className="dose-card daily-categories-card" aria-labelledby="daily-categories-title">
+              <div className="section-heading">
+                <p className="eyebrow">{t.dailyCategories}</p>
+                <h2 id="daily-categories-title">Choose any kind of reminder</h2>
+              </div>
+
+              <div className="life-category-grid">
+                {dailyCategories.map((category) => (
+                  <article className={`life-category-card ${category.tone}`} key={category.id}>
+                    <header>
+                      <span aria-hidden="true">{category.icon}</span>
+                      <h3>{category.title}</h3>
+                    </header>
+
+                    <ul>
+                      {category.examples.map((example) => (
+                        <li key={example}>{example}</li>
+                      ))}
+                    </ul>
+                  </article>
+                ))}
+              </div>
+            </section>
+
+            <section className="dose-card" aria-labelledby="add-daily-title">
+              <div className="section-heading">
+                <p className="eyebrow">{t.addDailyReminder}</p>
+                <h2 id="add-daily-title">Create a daily reminder</h2>
+              </div>
+
+              <form className="daily-form" onSubmit={addDailyReminder}>
+                <label>
+                  <span>{t.reminderTitle}</span>
+                  <input
+                    value={dailyForm.title}
+                    onChange={(event) => updateDailyForm("title", event.target.value)}
+                    placeholder="Example: Feed the cat"
+                  />
+                </label>
+
+                <label>
+                  <span>{t.category}</span>
+                  <select
+                    value={dailyForm.category}
+                    onChange={(event) => updateDailyForm("category", event.target.value)}
+                  >
+                    {dailyCategories.map((category) => (
+                      <option value={category.id} key={category.id}>
+                        {category.icon} {category.title}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <label>
+                  <span>{t.time}</span>
+                  <input
+                    type="time"
+                    value={dailyForm.time}
+                    onChange={(event) => updateDailyForm("time", event.target.value)}
+                  />
+                </label>
+
+                <label>
+                  <span>{t.repeat}</span>
+                  <select
+                    value={dailyForm.repeat}
+                    onChange={(event) => updateDailyForm("repeat", event.target.value)}
+                  >
+                    <option>Daily</option>
+                    <option>Weekdays</option>
+                    <option>Weekly</option>
+                    <option>Monthly</option>
+                    <option>Today</option>
+                  </select>
+                </label>
+
+                <label className="wide-field">
+                  <span>{t.notes}</span>
+                  <input
+                    value={dailyForm.notes}
+                    onChange={(event) => updateDailyForm("notes", event.target.value)}
+                    placeholder="Example: Use the accessible entrance"
+                  />
+                </label>
+
+                <button type="submit" className="secondary-button form-submit">
+                  {t.saveDailyReminder}
+                </button>
+              </form>
+            </section>
+
+            <section className="dose-card daily-list-card" aria-labelledby="daily-list-title">
+              <div className="section-heading">
+                <p className="eyebrow">{t.dailyList}</p>
+                <h2 id="daily-list-title">Large-print daily schedule</h2>
+              </div>
+
+              {sortedDailyReminders.length === 0 ? (
+                <p className="empty-state">{t.noDailyReminders}</p>
+              ) : (
+                <div className="daily-reminder-list">
+                  {sortedDailyReminders.map((reminder) => {
+                    const category = dailyCategories.find(
+                      (item) => item.id === reminder.category
+                    );
+
+                    return (
+                      <article
+                        className={
+                          reminder.completed
+                            ? "daily-reminder-item completed"
+                            : "daily-reminder-item"
+                        }
+                        key={reminder.id}
+                      >
+                        <div className={`daily-icon ${category?.tone || "teal"}`}>
+                          <span aria-hidden="true">{category?.icon || "✓"}</span>
+                        </div>
+
+                        <div>
+                          <time dateTime={reminder.time}>
+                            {formatTime(reminder.time)}
+                          </time>
+                          <h3>{reminder.title}</h3>
+                          <p>
+                            {category?.title || t.category} - {reminder.repeat}
+                            {reminder.notes ? ` - ${reminder.notes}` : ""}
+                          </p>
+                        </div>
+
+                        <div className="daily-actions">
+                          <button
+                            type="button"
+                            className="secondary-button"
+                            onClick={() => toggleDailyReminder(reminder.id)}
+                          >
+                            {reminder.completed ? t.reopen : t.complete}
+                          </button>
+                          <button
+                            type="button"
+                            className="delete-button"
+                            onClick={() => deleteDailyReminder(reminder.id)}
+                          >
+                            {t.deleteReminder}
+                          </button>
+                        </div>
+                      </article>
+                    );
+                  })}
+                </div>
+              )}
+            </section>
+          </div>
+        </>
+      )}
+
+      {activeTab === "cooking" && (
+        <>
+          <section className="cooking-hero" aria-labelledby="cooking-title">
+            <div>
+              <p className="eyebrow">{t.cookingTab}</p>
+              <h1 id="cooking-title">🔍 {t.cookingTitle}</h1>
+              <p className="intro">{t.cookingIntro}</p>
+            </div>
+          </section>
+
+          <div className="cooking-grid">
+            <section className="dose-card cooking-feature-card" aria-labelledby="cooking-features-title">
+              <div className="section-heading">
+                <p className="eyebrow">Gemini-powered support</p>
+                <h2 id="cooking-features-title">Accessible cooking features</h2>
+              </div>
+
+              <div className="cooking-feature-grid">
+                {cookingFeatures.map((feature) => (
+                  <article className={`cooking-feature ${feature.tone}`} key={feature.title}>
+                    <h3>
+                      <span aria-hidden="true">{feature.icon}</span>
+                      {feature.title}
+                    </h3>
+                    <p>{feature.text}</p>
+                  </article>
+                ))}
+              </div>
+            </section>
+
+            <section className="dose-card cooking-assistant-card" aria-labelledby="recipe-title">
+              <div className="section-heading">
+                <p className="eyebrow">Gemini</p>
+                <h2 id="recipe-title">Recipe simplification</h2>
+              </div>
+
+              {(!GEMINI_API_KEY ||
+                GEMINI_API_KEY === "PASTE_YOUR_GEMINI_API_KEY_HERE") && (
+                <p className="key-warning">{t.keyMissing}</p>
+              )}
+
+              <label className="cooking-textarea-label">
+                <span>{t.recipeInput}</span>
+                <textarea
+                  value={recipeInput}
+                  onChange={(event) => setRecipeInput(event.target.value)}
+                  rows="7"
+                />
+              </label>
+
+              <div className="cooking-actions">
+                <button
+                  type="button"
+                  className="secondary-button"
+                  onClick={() => runCookingPrompt("simplify")}
+                  disabled={cookingLoading}
+                >
+                  {t.simplifyRecipe}
+                </button>
+                <button
+                  type="button"
+                  className="ghost-button"
+                  onClick={() => runCookingPrompt("steps")}
+                  disabled={cookingLoading}
+                >
+                  {t.makeSteps}
+                </button>
+              </div>
+            </section>
+
+            <section className="dose-card" aria-labelledby="food-id-title">
+              <div className="section-heading">
+                <p className="eyebrow">Camera AI</p>
+                <h2 id="food-id-title">Visual food identification</h2>
+              </div>
+
+              <button
+                type="button"
+                className="secondary-button"
+                onClick={() => foodInputRef.current?.click()}
+              >
+                {t.uploadFoodPhoto}
+              </button>
+              <input
+                ref={foodInputRef}
+                className="sr-only"
+                type="file"
+                accept="image/*"
+                capture="environment"
+                onChange={handleFoodImageChange}
+              />
+
+              <div className="food-preview">
+                {cookingImagePreview ? (
+                  <img src={cookingImagePreview} alt="Food to identify" />
+                ) : (
+                  <span>Upload a food or label photo.</span>
+                )}
+              </div>
+
+              <button
+                type="button"
+                className="ghost-button full-width"
+                onClick={identifyFoodImage}
+                disabled={cookingLoading}
+              >
+                {t.identifyFood}
+              </button>
+            </section>
+
+            <section className="dose-card" aria-labelledby="timer-title">
+              <div className="section-heading">
+                <p className="eyebrow">{t.cookingTimer}</p>
+                <h2 id="timer-title">Timers & alerts</h2>
+              </div>
+
+              <div className="timer-display" aria-live="polite">
+                {String(Math.floor(timerSeconds / 60)).padStart(2, "0")}:
+                {String(timerSeconds % 60).padStart(2, "0")}
+              </div>
+
+              <label>
+                <span>{t.minutes}</span>
+                <input
+                  type="number"
+                  min="1"
+                  value={timerMinutes}
+                  onChange={(event) => setTimerMinutes(event.target.value)}
+                />
+              </label>
+
+              <div className="cooking-actions">
+                <button type="button" className="secondary-button" onClick={startCookingTimer}>
+                  {t.startTimer}
+                </button>
+                <button type="button" className="ghost-button" onClick={stopCookingTimer}>
+                  {t.stopTimer}
+                </button>
+              </div>
+            </section>
+
+            <section className="dose-card cooking-output-card" aria-labelledby="ai-output-title">
+              <div className="section-heading">
+                <p className="eyebrow">{t.aiOutput}</p>
+                <h2 id="ai-output-title">
+                  {cookingLoading ? t.loading : "Step-by-step guidance"}
+                </h2>
+              </div>
+
+              {cookingError && <p className="camera-error">{cookingError}</p>}
+
+              {cookingSteps.length > 0 && (
+                <div className="current-step">
+                  <span>
+                    Step {currentCookingStep + 1} of {cookingSteps.length}
+                  </span>
+                  <p>{cookingSteps[currentCookingStep]}</p>
+                </div>
+              )}
+
+              <div className="step-controls">
+                <button type="button" className="ghost-button" onClick={() => moveCookingStep(-1)}>
+                  {t.previousStep}
+                </button>
+                <button type="button" className="secondary-button" onClick={speakCurrentStep}>
+                  {t.readStep}
+                </button>
+                <button type="button" className="ghost-button" onClick={() => moveCookingStep(1)}>
+                  {t.nextStep}
+                </button>
+                <button type="button" className="text-button" onClick={startVoiceCommands}>
+                  {t.startListening}
+                </button>
+              </div>
+
+              <pre className="ai-output">{cookingOutput}</pre>
+            </section>
+          </div>
+        </>
       )}
 
       {activeTab === "caregiver" && (

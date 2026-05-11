@@ -10,10 +10,28 @@ The first feature is a smart medication reminder page with:
 - Manual add and delete controls for prescription reminders
 - Fully customizable multiple reminder times for the same medication
 - Camera capture with photo-upload fallback
-- Prototype photo review for expected versus detected pill count
 - Caregiver tab with user medication updates, confirmation photos, and schedule
+- Daily Life Reminders page for appointments, laundry, plants, pets, household tasks, hydration, and custom reminders
+- Accessible Cooking Assistant powered by Gemini for recipe simplification, step guidance, timers, voice controls, and food photo identification
 - Large-print dosage schedule
 - Multi-language controls and screen-reader live updates
+
+## Gemini API key
+
+Paste your Gemini API key in:
+
+```txt
+src/geminiConfig.js
+```
+
+Replace:
+
+```js
+export const GEMINI_API_KEY = "PASTE_YOUR_GEMINI_API_KEY_HERE";
+```
+
+This is fine for a class prototype. In production, route Gemini requests through
+a backend so the API key is not exposed in browser code.
 
 ## Run locally
 

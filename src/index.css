@@ -16,18 +16,21 @@ body {
 
 button,
 input,
+textarea,
 select {
   font: inherit;
 }
 
 button,
 select,
+textarea,
 input[type="checkbox"] {
   cursor: pointer;
 }
 
 button:focus-visible,
 select:focus-visible,
+textarea:focus-visible,
 input:focus-visible {
   outline: 4px solid #d97706;
   outline-offset: 3px;
@@ -113,6 +116,44 @@ input:focus-visible {
   border-radius: 8px;
   background: rgba(255, 253, 249, 0.9);
   box-shadow: 0 22px 70px rgba(92, 64, 51, 0.13);
+}
+
+.daily-hero {
+  width: min(100%, 1180px);
+  margin: 0 auto;
+  padding: 36px;
+  border: 1px solid rgba(100, 75, 58, 0.12);
+  border-radius: 8px;
+  background: #2f7f8c;
+  color: #ffffff;
+  box-shadow: 0 18px 50px rgba(47, 127, 140, 0.2);
+}
+
+.cooking-hero {
+  width: min(100%, 1180px);
+  margin: 0 auto;
+  padding: 36px;
+  border: 1px solid rgba(100, 75, 58, 0.12);
+  border-radius: 8px;
+  background: #49a257;
+  color: #ffffff;
+  box-shadow: 0 18px 50px rgba(73, 162, 87, 0.2);
+}
+
+.cooking-hero h1,
+.cooking-hero .intro,
+.cooking-hero .eyebrow {
+  color: #ffffff;
+}
+
+.daily-hero h1,
+.daily-hero .intro,
+.daily-hero .eyebrow {
+  color: #ffffff;
+}
+
+.daily-hero h1 {
+  margin-bottom: 14px;
 }
 
 .high-contrast .hero-panel,
@@ -286,6 +327,7 @@ h1 {
 }
 
 input,
+textarea,
 select {
   min-height: 48px;
   width: 100%;
@@ -296,10 +338,30 @@ select {
   color: #1f2937;
 }
 
+textarea {
+  resize: vertical;
+}
+
 .dashboard-grid {
   width: min(100%, 1180px);
   display: grid;
   grid-template-columns: minmax(0, 1.12fr) minmax(320px, 0.88fr);
+  gap: 18px;
+  margin: 18px auto 0;
+}
+
+.daily-grid {
+  width: min(100%, 1180px);
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+  gap: 18px;
+  margin: 18px auto 0;
+}
+
+.cooking-grid {
+  width: min(100%, 1180px);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 0.85fr);
   gap: 18px;
   margin: 18px auto 0;
 }
@@ -318,7 +380,11 @@ select {
 
 .primary-card,
 .schedule-card,
-.activity-card {
+.activity-card,
+.daily-categories-card,
+.daily-list-card,
+.cooking-feature-card,
+.cooking-output-card {
   grid-column: 1 / -1;
 }
 
@@ -506,71 +572,6 @@ button:disabled {
   background: #ffffff;
 }
 
-.photo-review {
-  display: grid;
-  gap: 16px;
-  margin-top: 18px;
-  padding: 18px;
-  border: 2px solid #d7c7bb;
-  border-radius: 8px;
-  background: #fffaf4;
-}
-
-.photo-review.reviewMatch {
-  border-color: #0f766e;
-  background: #f0faf5;
-}
-
-.photo-review.reviewMismatch {
-  border-color: #d14d72;
-  background: #fff1f3;
-}
-
-.photo-review .section-heading {
-  margin-bottom: 0;
-}
-
-.review-grid,
-.review-actions {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-  align-items: end;
-}
-
-.review-grid {
-  grid-template-columns: 180px minmax(180px, 1fr);
-}
-
-.review-grid label {
-  display: grid;
-  gap: 6px;
-  font-weight: 800;
-}
-
-.review-stat {
-  min-height: 78px;
-  display: grid;
-  align-content: center;
-  gap: 2px;
-  padding: 12px;
-  border: 2px solid #9bc7b5;
-  border-radius: 8px;
-  background: #ffffff;
-}
-
-.review-stat span {
-  color: #5c6675;
-  font-size: 15px;
-  font-weight: 800;
-}
-
-.review-stat strong {
-  color: #0f766e;
-  font-size: 34px;
-  line-height: 1;
-}
-
 .photo-confirmation img {
   width: 100%;
   height: 300px;
@@ -592,6 +593,376 @@ button:disabled {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 14px;
+}
+
+.daily-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.daily-form label {
+  display: grid;
+  gap: 6px;
+  font-weight: 800;
+}
+
+.life-category-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.life-category-card {
+  min-height: 220px;
+  overflow: hidden;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 10px 24px rgba(92, 64, 51, 0.08);
+}
+
+.life-category-card header {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  min-height: 68px;
+  padding: 14px;
+  color: #ffffff;
+}
+
+.life-category-card header span {
+  font-size: 28px;
+}
+
+.life-category-card h3 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 26px;
+}
+
+.life-category-card ul {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 56px 28px 28px;
+  color: #243042;
+}
+
+.life-category-card.teal {
+  background: #e6f4f5;
+  border-color: #2f7f8c;
+}
+
+.life-category-card.teal header {
+  background: #2f7f8c;
+}
+
+.life-category-card.indigo {
+  background: #eef0ff;
+  border-color: #6662e8;
+}
+
+.life-category-card.indigo header {
+  background: #6662e8;
+}
+
+.life-category-card.green {
+  background: #edf8f0;
+  border-color: #49a257;
+}
+
+.life-category-card.green header {
+  background: #49a257;
+}
+
+.life-category-card.orange {
+  background: #fff1e4;
+  border-color: #ef7c2d;
+}
+
+.life-category-card.orange header {
+  background: #ef7c2d;
+}
+
+.life-category-card.pink {
+  background: #fff0f7;
+  border-color: #c93b7f;
+}
+
+.life-category-card.pink header {
+  background: #c93b7f;
+}
+
+.life-category-card.blue {
+  background: #e8f6fa;
+  border-color: #3f95b2;
+}
+
+.life-category-card.blue header {
+  background: #3f95b2;
+}
+
+.daily-reminder-list {
+  display: grid;
+  gap: 14px;
+}
+
+.daily-reminder-item {
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr) minmax(180px, 240px);
+  gap: 16px;
+  align-items: center;
+  padding: 18px;
+  border: 2px solid #eaded4;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.daily-reminder-item.completed {
+  opacity: 0.72;
+}
+
+.daily-reminder-item.completed h3 {
+  text-decoration: line-through;
+}
+
+.daily-icon {
+  width: 70px;
+  height: 70px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 34px;
+}
+
+.daily-icon.teal {
+  background: #2f7f8c;
+}
+
+.daily-icon.indigo {
+  background: #6662e8;
+}
+
+.daily-icon.green {
+  background: #49a257;
+}
+
+.daily-icon.orange {
+  background: #ef7c2d;
+}
+
+.daily-icon.pink {
+  background: #c93b7f;
+}
+
+.daily-icon.blue {
+  background: #3f95b2;
+}
+
+.daily-reminder-item time {
+  color: #0f766e;
+  font-size: 28px;
+  font-weight: 900;
+}
+
+.daily-reminder-item h3 {
+  margin: 4px 0;
+  font-size: 28px;
+}
+
+.daily-reminder-item p {
+  margin: 0;
+  color: #5c6675;
+}
+
+.daily-actions {
+  display: grid;
+  gap: 10px;
+}
+
+.daily-actions .secondary-button {
+  margin-top: 0;
+}
+
+.cooking-feature-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.cooking-feature {
+  min-height: 170px;
+  padding: 24px;
+  border-left: 10px solid #49a257;
+  border-radius: 8px;
+  background: #edf8f0;
+  box-shadow: 0 10px 24px rgba(92, 64, 51, 0.08);
+}
+
+.cooking-feature h3 {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin: 0 0 34px;
+  color: #49a257;
+  font-size: 28px;
+}
+
+.cooking-feature p {
+  margin: 0;
+  color: #243042;
+  font-size: 21px;
+}
+
+.cooking-feature.teal {
+  border-color: #2f7f8c;
+  background: #e6f4f5;
+}
+
+.cooking-feature.teal h3 {
+  color: #2f7f8c;
+}
+
+.cooking-feature.purple {
+  border-color: #7c3aed;
+  background: #f1ebff;
+}
+
+.cooking-feature.purple h3 {
+  color: #7c3aed;
+}
+
+.cooking-feature.orange {
+  border-color: #ef7c2d;
+  background: #fff1e4;
+}
+
+.cooking-feature.orange h3 {
+  color: #ef7c2d;
+}
+
+.cooking-feature.pink {
+  border-color: #c93b7f;
+  background: #fff0f7;
+}
+
+.cooking-feature.pink h3 {
+  color: #c93b7f;
+}
+
+.cooking-feature.blue {
+  border-color: #3f95b2;
+  background: #e8f6fa;
+}
+
+.cooking-feature.blue h3 {
+  color: #3f95b2;
+}
+
+.cooking-textarea-label,
+.cooking-assistant-card label,
+.cooking-grid label {
+  display: grid;
+  gap: 8px;
+  font-weight: 800;
+}
+
+.cooking-actions,
+.step-controls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.cooking-actions .secondary-button,
+.cooking-actions .ghost-button,
+.step-controls .secondary-button,
+.step-controls .ghost-button {
+  margin-top: 0;
+}
+
+.key-warning {
+  margin-bottom: 16px;
+  padding: 14px;
+  border: 2px solid #ef7c2d;
+  border-radius: 8px;
+  background: #fff1e4;
+  color: #7a4c24;
+  font-weight: 900;
+}
+
+.food-preview {
+  min-height: 220px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  margin-top: 16px;
+  border: 2px dashed #9b8a7b;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #6b7280;
+  font-weight: 900;
+  text-align: center;
+}
+
+.food-preview img {
+  width: 100%;
+  height: 260px;
+  object-fit: cover;
+}
+
+.full-width {
+  width: 100%;
+  margin-top: 14px;
+}
+
+.timer-display {
+  margin-bottom: 14px;
+  padding: 22px;
+  border: 3px solid #2f7f8c;
+  border-radius: 8px;
+  background: #e6f4f5;
+  color: #2f7f8c;
+  font-size: 58px;
+  font-weight: 900;
+  line-height: 1;
+  text-align: center;
+}
+
+.current-step {
+  margin-bottom: 16px;
+  padding: 20px;
+  border: 3px solid #49a257;
+  border-radius: 8px;
+  background: #edf8f0;
+}
+
+.current-step span {
+  color: #0f766e;
+  font-weight: 900;
+}
+
+.current-step p {
+  margin: 8px 0 0;
+  color: #243042;
+  font-size: 28px;
+  font-weight: 900;
+}
+
+.ai-output {
+  margin: 18px 0 0;
+  padding: 18px;
+  overflow: auto;
+  white-space: pre-wrap;
+  border: 2px solid #eaded4;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #243042;
+  font: inherit;
 }
 
 .time-builder {
@@ -667,15 +1038,22 @@ button:disabled {
 .high-contrast .toggle,
 .high-contrast .photo-placeholder,
 .high-contrast .photo-confirmation,
-.high-contrast .photo-review,
-.high-contrast .review-stat,
 .high-contrast .time-row,
+.high-contrast .daily-reminder-item,
+.high-contrast .life-category-card,
+.high-contrast .cooking-feature,
+.high-contrast .food-preview,
+.high-contrast .timer-display,
+.high-contrast .current-step,
+.high-contrast .ai-output,
+.high-contrast .key-warning,
 .high-contrast .tab-bar,
 .high-contrast .tab-button.active,
 .high-contrast .caregiver-summary div,
 .high-contrast .care-log-item,
 .high-contrast .care-photo,
 .high-contrast input,
+.high-contrast textarea,
 .high-contrast select,
 .high-contrast .ghost-button,
 .high-contrast .text-button,
@@ -926,15 +1304,21 @@ button:disabled {
 
   .hero-panel,
   .dashboard-grid,
+  .daily-grid,
+  .cooking-grid,
   .dose-detail,
   .action-grid,
   .reminder-form,
-  .review-grid,
-  .review-actions,
+  .daily-form,
+  .cooking-feature-grid,
+  .cooking-actions,
+  .step-controls,
   .time-row,
   .camera-actions,
   .caregiver-summary,
-  .care-log-item {
+  .care-log-item,
+  .life-category-grid,
+  .daily-reminder-item {
     grid-template-columns: 1fr;
   }
 
