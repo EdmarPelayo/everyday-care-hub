@@ -620,14 +620,39 @@ export default function App() {
         {liveMessage}
       </div>
 
-      <section className="hero-panel" aria-labelledby="page-title">
+      <header className="site-header">
         <div>
           <p className="eyebrow">{t.className}</p>
-          <h1 id="page-title">{t.appName}</h1>
-          <p className="intro">{t.intro}</p>
+          <strong>{t.appName}</strong>
           <div className="date-strip">
             <span>{t.today}: {format(today, "EEEE, MMMM d, yyyy")}</span>
           </div>
+        </div>
+
+        <nav className="tab-bar" aria-label="Everyday Helper pages">
+          <button
+            type="button"
+            className={activeTab === "medication" ? "tab-button active" : "tab-button"}
+            onClick={() => setActiveTab("medication")}
+          >
+            {t.userTab}
+          </button>
+          <button
+            type="button"
+            className={activeTab === "caregiver" ? "tab-button active" : "tab-button"}
+            onClick={() => setActiveTab("caregiver")}
+          >
+            {t.caregiverTab}
+          </button>
+        </nav>
+      </header>
+
+      {activeTab === "medication" && (
+      <>
+      <section className="hero-panel" aria-labelledby="page-title">
+        <div>
+          <h1 id="page-title">{t.appName}</h1>
+          <p className="intro">{t.intro}</p>
         </div>
 
         <div className={alertModes.visual ? "visual-alert active" : "visual-alert"}>
@@ -659,24 +684,6 @@ export default function App() {
         <Toggle checked label={t.screenReader} disabled />
       </section>
 
-      <nav className="tab-bar" aria-label="Everyday Helper views">
-        <button
-          type="button"
-          className={activeTab === "medication" ? "tab-button active" : "tab-button"}
-          onClick={() => setActiveTab("medication")}
-        >
-          {t.userTab}
-        </button>
-        <button
-          type="button"
-          className={activeTab === "caregiver" ? "tab-button active" : "tab-button"}
-          onClick={() => setActiveTab("caregiver")}
-        >
-          {t.caregiverTab}
-        </button>
-      </nav>
-
-      {activeTab === "medication" && (
       <div className="dashboard-grid">
         <section className="dose-card primary-card" aria-labelledby="current-dose">
           <div className="section-heading">
@@ -1028,6 +1035,7 @@ export default function App() {
           </ul>
         </section>
       </div>
+      </>
       )}
 
       {activeTab === "caregiver" && (
