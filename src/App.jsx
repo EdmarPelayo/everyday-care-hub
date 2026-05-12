@@ -1512,7 +1512,7 @@ export default function App() {
           <section className="daily-hero" aria-labelledby="daily-title">
             <div>
               <p className="eyebrow">{t.dailyTab}</p>
-              <h1 id="daily-title">📅 {t.dailyTitle}</h1>
+              <h1 id="daily-title">{t.dailyTitle}</h1>
               <p className="intro">{t.dailyIntro}</p>
             </div>
           </section>
@@ -1667,7 +1667,7 @@ export default function App() {
           <section className="cooking-hero" aria-labelledby="cooking-title">
             <div>
               <p className="eyebrow">{t.cookingTab}</p>
-              <h1 id="cooking-title">🔍 {t.cookingTitle}</h1>
+              <h1 id="cooking-title">{t.cookingTitle}</h1>
               <p className="intro">{t.cookingIntro}</p>
             </div>
           </section>
